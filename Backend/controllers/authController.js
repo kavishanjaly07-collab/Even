@@ -1,91 +1,171 @@
+
+import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
-import dotenv from "dotenv";
-dotenv.config();
 
-// Makes a login "ticket" (token) that React will keep after login
-function createToken(user) {
+// Generate JWT Token
+const generateToken = (id) => {
   return jwt.sign(
-    { id: user._id, role: user.role },
+    { id },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" } // token works for 7 days
+    { expiresIn: "7d" }
   );
-}
+};
 
-// ---------- REGISTER ----------
-// POST /api/auth/register
+// REGISTER
 export const register = async (req, res) => {
   try {
     const { username, phone, email, password, role } = req.body;
 
-    // 1. Check all fields are filled
-    if (!username || !phone || !email || !password) {
-      return res.status(400).json({ message: "Please fill in all fields." });
+    // Check required fields
+  if (!username || !phone || !email || !password) {
+      return res.status(400).json({
+        message: "Username, email and password are required.",
+      });
     }
 
-    // 2. Check the user does not already exist
-    const exists = await User.findOne({ $or: [{ username }, { email }] });
-    if (exists) {
-      return res.status(400).json({ message: "Username or email already used." });
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must contain at least 6 characters.",
+      });
     }
 
-    // 3. Encrypt the password (never save the real password!)
+    // Only customer and provider can register
+    const selectedRole = role || "customer";
+
+    if (!["customer", "provider"].includes(selectedRole)) {
+      return res.status(400).json({
+        message: "Invalid registration role.",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = username.trim();
+
+    // Check existing user
+    const existingUser = await User.findOne({
+      $or: [
+        { email: normalizedEmail },
+        { username: normalizedUsername },
+      ],
+    });
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "Username or email already exists.",
+      });
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4. Save the user. Only "customer" or "provider" is allowed from the website.
-    //    "admin" must be set manually in the database.
+    // Create user
     const user = await User.create({
-      username,
+      username: normalizedUsername,
       phone,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
-      role: role === "provider" ? "provider" : "customer",
+      role: selectedRole,
     });
 
-    // 5. Send back the token + safe user info (no password)
-    res.status(201).json({
-      token: createToken(user),
-      user: { id: user._id, username: user.username, role: user.role },
+    const token = generateToken(user._id);
+
+    return res.status(201).json({
+      message: "Registration successful.",
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        phone: user.phone,
+        email: user.email,
+        role: user.role,
+      },
     });
+
   } catch (error) {
-    console.error("Register error:", error.message);
-    res.status(500).json({ message: "Server error. Please try again." });
+    console.error("Register Error:", error.message);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "Username or email already exists.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Registration failed.",
+    });
   }
 };
 
-// ---------- LOGIN ----------
-// POST /api/auth/login
+// LOGIN
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ message: "Enter your user name and password." });
+      return res.status(400).json({
+        message: "Username and password are required.",
+      });
     }
 
-    // 1. Find the user
-    const user = await User.findOne({ username });
-
-    // 2. Compare the typed password with the encrypted one
-    //    (same message for both errors, so hackers can't guess which was wrong)
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "Wrong user name or password." });
-    }
-
-    res.json({
-      token: createToken(user),
-      user: { id: user._id, username: user.username, role: user.role },
+    // Find user
+    const user = await User.findOne({
+      username: username.trim(),
     });
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid username or password.",
+      });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Invalid username or password.",
+      });
+    }
+
+    const token = generateToken(user._id);
+
+    return res.status(200).json({
+      message: "Login successful.",
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        phone: user.phone,
+        email: user.email,
+        role: user.role,
+      },
+    });
+
   } catch (error) {
-    console.error("Login error:", error.message);
-    res.status(500).json({ message: "Server error. Please try again." });
+    console.error("Login Error:", error.message);
+
+    return res.status(500).json({
+      message: "Login failed.",
+    });
   }
 };
 
-// ---------- GET MY PROFILE ----------
-// GET /api/auth/me  (needs login, see authMiddleware.js)
+// GET LOGGED-IN USER
 export const getMe = async (req, res) => {
-  // req.user was added by the protect middleware
-  res.json(req.user);
+  try {
+    return res.status(200).json({
+      user: req.user,
+    });
+
+  } catch (error) {
+    console.error("Get Profile Error:", error.message);
+
+    return res.status(500).json({
+      message: "Unable to get user profile.",
+    });
+  }
 };

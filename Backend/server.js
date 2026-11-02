@@ -1,25 +1,56 @@
+
 import express from "express";
 import dotenv from "dotenv";
-import connectDB from "./config/db.js"; 
-import authRoutes from "./routes/authRoutes.js";
+import cors from "cors";
 
-// 3. Create the app
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
+import serviceRoutes from "./routes/serviceRoutes.js";
+import providerProfileRoutes from "./routes/providerProfileRoutes.js";
 
 dotenv.config();
-const app = express();
-app.use(express.json());
-app.use("/api/auth", authRoutes);
 
-const MONGO_URI = process.env.MONGO_URI 
+const app = express();
+
 const PORT = process.env.PORT || 5000;
 
-await connectDB(MONGO_URI);
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-app.get ("/", (req, res) => {
-    res.send("vanakammmmm.....");
-})
+// API Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/provider-profile", providerProfileRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/messages", messageRoutes);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-})
+// Backend test route
+app.get("/", (req, res) => {
+  res.status(200).json({
+    message: "Event Connect Backend is Running Successfully!",
+  });
+});
 
+//service
+app.use("/api/auth", authRoutes);
+app.use("/api/services", serviceRoutes);
+
+
+
+// Start server after MongoDB connection
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
