@@ -1,0 +1,310 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+
+/* Colors: change here to update everything */
+.cat-header {
+  --purple-dark: #3b0a52;
+  --gold-text: #8a6d00;
+  --gold-bg: #fcf0c4;
+  --field-bg: #f2f2ee;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: #2b2b2b;
+  min-height: 100vh;
+  /* page color + soft golden glow in the bottom right corner */
+  background:
+    radial-gradient(circle at 95% 45%, rgba(250, 230, 150, 0.45), transparent 30%),
+    #f8f9f4;
+}
+
+.cat-header button,
+.cat-header select,
+.cat-header input {
+  font-family: inherit;
+}
+
+.cat-header a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---------- 1. DISCIPLINES BAR ---------- */
+.discipline-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 30px;
+}
+
+.discipline-label {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: var(--gold-text);
+  white-space: nowrap;
+}
+
+/* Row of pills that scrolls sideways when there is no more room */
+.pill-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none; /* hides the scrollbar (Firefox) */
+}
+.pill-scroll::-webkit-scrollbar {
+  display: none; /* hides the scrollbar (Chrome, Edge, Safari) */
+}
+
+/* ---------- PILL BUTTON (used by both rows) ---------- */
+.pill {
+  flex-shrink: 0; /* stops pills from squashing */
+  border: none;
+  background: #fff;
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.pill:hover {
+  background: #ece9f2;
+}
+.pill.active {
+  background: var(--purple-dark);
+  color: #fff;
+}
+
+/* Milestone pills use the light gray look */
+.milestone-row .pill {
+  background: var(--field-bg);
+}
+.milestone-row .pill:hover {
+  background: #e6e6e0;
+}
+.milestone-row .pill.active {
+  background: var(--purple-dark);
+}
+
+/* ---------- CONTENT AREA ---------- */
+.cat-inner {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 10px 30px 60px;
+}
+
+/* ---------- 2. BREADCRUMB ---------- */
+.breadcrumb {
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #555;
+  margin-bottom: 18px;
+}
+.breadcrumb span {
+  margin: 0 4px;
+  font-size: 10px;
+}
+.breadcrumb strong {
+  color: var(--gold-text);
+  font-weight: 600;
+}
+
+/* ---------- 3. TITLE + LIVE CARD ---------- */
+.hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.hero-left {
+  max-width: 540px;
+}
+
+.vetted-badge {
+  display: inline-block;
+  background: var(--gold-bg);
+  color: var(--gold-text);
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.hero-left h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 44px;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.hero-left p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+  max-width: 500px;
+}
+
+.live-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  padding: 18px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  font-size: 13px;
+}
+.live-card p {
+  margin-top: 4px;
+}
+
+.live-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold-bg);
+  border-radius: 10px;
+}
+
+.live-title {
+  letter-spacing: 1px;
+  color: #444;
+}
+
+/* Small green dot */
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #16a34a;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ---------- 4. FILTER CARD ---------- */
+.filter-card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--field-bg);
+  padding: 0 16px;
+  border-radius: 12px;
+  height: 38px;
+  font-size: 12px;
+}
+.search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+}
+
+.sort-label {
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #555;
+  margin-left: 6px;
+}
+
+.select {
+  height: 38px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--field-bg);
+  font-size: 13px;
+  cursor: pointer;
+}
+.sort-select {
+  min-width: 200px;
+}
+
+.toggle {
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--field-bg);
+  font-size: 13px;
+  cursor: pointer;
+}
+/* When a toggle is turned ON */
+.toggle.on {
+  background: var(--purple-dark);
+  color: #fff;
+}
+.star {
+  color: #eab308;
+}
+
+.reset {
+  margin-left: auto; /* pushes the reset button to the right */
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #444;
+  cursor: pointer;
+  padding: 0 10px;
+}
+.reset:hover {
+  color: var(--purple-dark);
+}
+
+/* Milestone row */
+.milestone-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.milestone-label {
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #555;
+  white-space: nowrap;
+}
+
+/* ---------- SMALL SCREENS ---------- */
+@media (max-width: 800px) {
+  .hero-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hero-left h1 {
+    font-size: 34px;
+  }
+  .discipline-bar,
+  .milestone-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pill-scroll {
+    max-width: 100%;
+  }
+  .reset {
+    margin-left: 0;
+  }
+}

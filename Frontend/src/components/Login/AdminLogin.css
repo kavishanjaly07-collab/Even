@@ -1,0 +1,92 @@
+.admin-login-card {
+  padding: 38px 40px;
+}
+
+.admin-login-brand-mark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  margin: 0 auto 12px;
+  border-radius: 12px;
+  background: #4a0e63;
+  color: #fff;
+  font-size: 25px;
+}
+
+.admin-login-eyebrow {
+  margin: 0 0 8px;
+  color: #6f2d83;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.admin-login-card h1 {
+  margin-bottom: 8px;
+  font-size: 25px;
+  letter-spacing: 0;
+}
+
+.admin-login-description {
+  margin: 0 0 24px;
+  color: #62566a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.admin-login-password {
+  position: relative;
+}
+
+.admin-login-card .admin-login-password input {
+  padding-right: 54px;
+}
+
+.admin-login-password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 22px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: #4a0e63;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-login-card .pill-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.admin-login-message {
+  line-height: 1.5;
+}
+
+.admin-login-switch {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.admin-login-back {
+  display: inline-block;
+  margin-top: 24px;
+  color: #4a0e63;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.admin-login-back:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .admin-login-card {
+    padding: 32px 24px;
+    border-radius: 28px;
+  }
+}

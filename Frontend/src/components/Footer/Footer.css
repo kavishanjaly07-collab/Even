@@ -1,0 +1,178 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+
+/* Colors: change here to update everything */
+.footer {
+  --gold-text: #8a6d00;
+  --purple-text: #7b2fa0;
+  --purple-dark: #3b0a52;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background: #f2f3ee;
+  color: #2b2b2b;
+  padding: 40px 0 24px;
+}
+
+.footer a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.footer ul {
+  list-style: none;
+}
+
+/* Keeps content centered with a max width */
+.footer-inner {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+/* ---------- TOP: 4 COLUMNS ---------- */
+.footer-top {
+  display: grid;
+  /* first column is wider than the other three */
+  grid-template-columns: 1.9fr 1fr 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 50px;
+}
+
+/* ---------- BRAND COLUMN ---------- */
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.brand-logo {
+  background: var(--purple-dark);
+  color: #eab308;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.brand-name {
+  font-family: "Playfair Display", serif;
+  font-size: 12px;
+}
+
+.footer-brand p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #555;
+  max-width: 235px;
+  margin-bottom: 16px;
+}
+
+.socials {
+  display: flex;
+  gap: 10px;
+}
+
+.socials a {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6e7e1;
+  border-radius: 50%;
+  font-size: 11px;
+}
+
+.socials a:hover {
+  background: #d9dad3;
+}
+
+/* ---------- LINK COLUMNS ---------- */
+.footer-column h4 {
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.footer-column li {
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: #555;
+}
+
+.footer-column li a:hover {
+  color: var(--purple-text);
+}
+
+/* ---------- SMALL WHITE CARDS ---------- */
+.standard-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.standard-title {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.standard-title.gold {
+  color: var(--gold-text);
+}
+
+.standard-title.purple {
+  color: var(--purple-text);
+}
+
+.standard-card p {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #555;
+}
+
+/* ---------- BOTTOM BAR ---------- */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11px;
+  color: #555;
+}
+
+.bottom-badges {
+  display: flex;
+  gap: 30px;
+}
+
+/* The small dot between the badges (not before the first one) */
+.bottom-badges li + li::before {
+  content: "•";
+  margin-right: 30px;
+}
+
+/* ---------- SMALL SCREENS ---------- */
+@media (max-width: 800px) {
+  .footer-top {
+    grid-template-columns: 1fr 1fr; /* 2 columns on tablets */
+  }
+}
+
+@media (max-width: 500px) {
+  .footer-top {
+    grid-template-columns: 1fr; /* 1 column on phones */
+  }
+
+  .bottom-badges {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bottom-badges li + li::before {
+    display: none;
+  }
+}

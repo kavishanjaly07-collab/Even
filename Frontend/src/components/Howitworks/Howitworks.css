@@ -1,0 +1,156 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+
+/* Colors: change here to update everything */
+.steps-section,
+.features-section {
+  --gold-text: #8a6d00;
+  --gold-bg: #fcf0c4;
+  --purple-text: #7b2fa0;
+  --purple-bg: #eddff5;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: #2b2b2b;
+}
+
+/* ---------- SECTION BACKGROUNDS ---------- */
+.steps-section {
+  background: #f8f9f4;
+  padding: 40px 0 50px;
+}
+
+.features-section {
+  background: #f2f3ee; /* slightly darker, like your design */
+  padding: 40px 0 50px;
+}
+
+/* Keeps content in the middle with a max width */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ---------- HEADINGS ---------- */
+.heading {
+  margin-bottom: 40px;
+}
+
+.heading.center {
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--gold-text);
+}
+
+.heading h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 12px;
+  margin: 8px 0 10px;
+}
+
+.heading p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #555;
+  max-width: 420px;
+}
+
+/* margin: auto centers the paragraph when the heading is centered */
+.heading.center p {
+  margin: 0 auto;
+}
+
+/* ---------- CARD GRID (3 columns) ---------- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* ---------- BADGES (small colored squares) ---------- */
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.badge-big {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  font-family: "Playfair Display", serif;
+  font-size: 14px;
+}
+
+.badge.gold {
+  background: var(--gold-bg);
+  color: var(--gold-text);
+}
+
+.badge.purple {
+  background: var(--purple-bg);
+  color: var(--purple-text);
+}
+
+/* ---------- STEP CARDS (centered text) ---------- */
+.step-card {
+  background: #fff;
+  padding: 24px 20px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.step-card .badge {
+  margin: 0 auto 20px; /* centers the badge */
+}
+
+.step-card h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 11px;
+  margin-bottom: 12px;
+}
+
+.step-card p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* ---------- FEATURE CARDS (left aligned text) ---------- */
+.feature-card {
+  background: #fff;
+  padding: 14px 14px 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.feature-card .badge {
+  margin-bottom: 18px;
+}
+
+.feature-card h3 {
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* ---------- SMALL SCREENS ---------- */
+@media (max-width: 800px) {
+  .card-grid {
+    grid-template-columns: 1fr; /* one card per row on phones */
+  }
+}

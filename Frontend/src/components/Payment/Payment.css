@@ -1,0 +1,121 @@
+/* ---------- PAGE BACKGROUND ---------- */
+.payment-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: Inter, Arial, sans-serif;
+  position: relative;
+
+  /* Same photo as Login and Register (inside the "public" folder) */
+  background-color: #5a2d6e; /* shows if the image is missing */
+  background-image: url("/src/assets/bgimg.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Soft white layer on top of the photo (like your Figma design) */
+.payment-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- CARD ---------- */
+.payment-card {
+  position: relative; /* keeps the card above the white layer */
+  width: 100%;
+  max-width: 400px;
+  background: #e1e1e1;
+  border-radius: 40px;
+  padding: 50px 36px 70px;
+}
+
+.payment-card h1 {
+  text-align: center;
+  color: #4a0e63;
+  font-size: 30px;
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+}
+
+.payment-card label {
+  display: block;
+  font-size: 17px;
+  margin-bottom: 8px;
+  color: #222;
+}
+
+.payment-card input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 22px;
+  padding: 0 8px;
+  margin-bottom: 26px;
+  border: none;
+  background: #d4d4d4;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.payment-card input:focus {
+  outline: 2px solid #4a0e63;
+}
+
+/* ---------- EXPIRE DATE + CVV SIDE BY SIDE ---------- */
+.row {
+  display: flex;
+  gap: 40px;
+}
+
+.column {
+  flex: 1;
+}
+
+/* ---------- PAY BUTTON ---------- */
+.pay-btn {
+  display: block;
+  margin: 70px auto 0;
+  width: 200px;
+  padding: 8px 0;
+  border: none;
+  border-radius: 999px;
+  background: #4a0e63;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pay-btn:hover {
+  background: #5f1580;
+}
+
+.payment-message {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #4a0e63;
+}
+
+.payment-demo-notice {
+  margin: 0 0 24px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f0e8f3;
+  color: #4a0e63;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* ---------- SMALL SCREENS ---------- */
+@media (max-width: 480px) {
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+}

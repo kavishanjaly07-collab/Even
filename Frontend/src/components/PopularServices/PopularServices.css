@@ -1,0 +1,180 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+
+/* Colors: change here to update everything */
+.popular-section {
+  --gold-text: #8a6d00;
+  --purple-dark: #3b0a52;
+  --gold: #eab308;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background: #f2f3ee;
+  color: #2b2b2b;
+  padding: 40px 0 50px;
+}
+
+.popular-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+/* ---------- HEADING ---------- */
+.popular-heading {
+  margin-bottom: 36px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--gold-text);
+}
+
+.popular-heading h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 13px;
+  margin: 8px 0 10px;
+}
+
+.popular-heading p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+  max-width: 380px;
+}
+
+/* ---------- GRID: 4 CARDS ---------- */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+/* ---------- CARD ---------- */
+.service-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden; /* clips the photo to the rounded corners */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Hover effect: card lifts up a little */
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(59, 10, 82, 0.15);
+}
+
+/* ---------- PHOTO ---------- */
+.service-image {
+  position: relative; /* lets the pills sit on top of the photo */
+  height: 158px;
+  background-color: #5a2d6e; /* shows if the photo is missing */
+  background-size: cover;
+  background-position: center;
+}
+
+.rating {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.rating small {
+  color: #777;
+  font-size: 9px;
+}
+
+.star {
+  color: var(--gold);
+}
+
+.verified {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: var(--purple-dark);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.check {
+  color: var(--gold);
+  font-size: 9px;
+}
+
+/* ---------- TEXT PART ---------- */
+.service-body {
+  padding: 16px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* makes all cards the same height */
+}
+
+.service-body h3 {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.service-body p {
+  font-size: 10px;
+  line-height: 1.5;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+/* ---------- PRICE + BUTTON ---------- */
+.service-footer {
+  margin-top: auto; /* pushes this row to the bottom of the card */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #eee;
+  padding-top: 14px;
+}
+
+.price-label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.price {
+  font-family: "Playfair Display", serif;
+  font-size: 12px;
+}
+
+.book-btn {
+  background: var(--purple-dark);
+  color: var(--gold);
+  text-decoration: none;
+  font-size: 12px;
+  padding: 10px 14px;
+  border-radius: 999px;
+}
+
+.book-btn:hover {
+  background: #52107a;
+}
+
+/* ---------- SMALL SCREENS ---------- */
+@media (max-width: 900px) {
+  .service-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
+  }
+}
+
+@media (max-width: 500px) {
+  .service-grid {
+    grid-template-columns: 1fr; /* 1 column on phones */
+  }
+}

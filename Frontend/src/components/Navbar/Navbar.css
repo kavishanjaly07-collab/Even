@@ -1,0 +1,80 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.8);
+  flex-wrap: wrap;
+}
+
+.navbar__logo {
+  display: grid;
+  place-items: center;
+  width: 90px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--plum);
+  color: var(--gold);
+  font-family: var(--font-display);
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.navbar__portals {
+  display: flex;
+  gap: 4px;
+  background: #ececea;
+  padding: 4px;
+  border-radius: 999px;
+}
+.navbar__portal {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+}
+.navbar__portal.is-active { background: var(--card); color: var(--text); }
+
+.navbar__links { display: flex; gap: 8px; margin-left: auto; }
+.navbar__link {
+  padding: 8px 12px;
+  text-decoration: none;
+  color: var(--text);
+  position: relative;
+}
+.navbar__link.is-active::before {
+  content: "";
+  position: absolute;
+  top: -6px; left: 50%;
+  width: 28px; height: 2px;
+  transform: translateX(-50%);
+  background: #3b82f6;
+}
+
+.navbar__actions { display: flex; align-items: center; gap: 10px; }
+
+.navbar__bell { position: relative; padding: 6px; color: var(--text); }
+.navbar__dot {
+  position: absolute; top: 4px; right: 4px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+/* Shared button styles (also used in Hero and SearchBar) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 500;
+  transition: transform 0.15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn--sm { padding: 10px 18px; }
+.btn--plum { background: var(--plum); color: var(--gold); box-shadow: 0 6px 14px rgba(59, 10, 69, 0.3); }
+.btn--outline-gold { border: 1px solid var(--gold); color: var(--gold-dark); background: var(--card); }
+.btn--white { background: var(--card); color: var(--plum-soft); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+.btn--gold { background: var(--gold); color: var(--plum); }
+.btn--outline{ border: 1px solid var(--gold); color: var(--gold-dark); background: var(--card); }
+

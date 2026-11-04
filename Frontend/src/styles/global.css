@@ -1,0 +1,28 @@
+/* Global styles: colours, fonts and resets used by every component. */
+:root {
+  --plum: #3b0a45;
+  --plum-soft: #7b2d8e;
+  --gold: #e8b800;
+  --gold-dark: #8a6d00;
+  --bg: #f8f9f5;
+  --card: #ffffff;
+  --field: #f1f1ee;
+  --text: #2a2a2a;
+  --muted: #6b6b6b;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-display: "Playfair Display", serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+button, input, select { font: inherit; }
+button { cursor: pointer; border: none; background: none; }
+
+:focus-visible { outline: 2px solid var(--plum-soft); outline-offset: 2px; }

@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+
+/* Colors: change here to update everything */
+.listing-footer {
+  --purple-dark: #3b0a52;
+  --gold-text: #8a6d00;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background: #f8f9f4;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 24px 30px 80px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* ---------- ESCROW NOTE (left) ---------- */
+.escrow-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #555;
+}
+
+.escrow-note strong {
+  color: var(--gold-text);
+  font-weight: 600;
+}
+
+.escrow-note .dot {
+  font-size: 10px;
+}
+
+/* ---------- PAGINATION (right) ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  color: #2b2b2b;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: background 0.2s;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+  background: #ece9f2;
+}
+
+/* The current page */
+.page-btn.active {
+  background: var(--purple-dark);
+  color: #fff;
+}
+
+/* Previous button on page 1, next button on the last page */
+.page-btn:disabled {
+  color: #bbb;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.page-btn.arrow {
+  font-size: 16px;
+}
+
+.dots {
+  color: #999;
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+/* ---------- SMALL SCREENS ---------- */
+@media (max-width: 600px) {
+  .listing-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
