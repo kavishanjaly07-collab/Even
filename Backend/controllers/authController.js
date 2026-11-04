@@ -100,11 +100,17 @@ export const register = async (req, res) => {
 // LOGIN
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, requiredRole } = req.body || {};
 
     if (!username || !password) {
       return res.status(400).json({
         message: "Username and password are required.",
+      });
+    }
+
+    if (requiredRole !== undefined && requiredRole !== "admin") {
+      return res.status(400).json({
+        message: "Invalid required role.",
       });
     }
 
@@ -128,6 +134,12 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         message: "Invalid username or password.",
+      });
+    }
+
+    if (requiredRole === "admin" && user.role !== "admin") {
+      return res.status(403).json({
+        message: "This account does not have administrator access.",
       });
     }
 

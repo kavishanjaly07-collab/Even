@@ -9,6 +9,8 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
 import providerProfileRoutes from "./routes/providerProfileRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import clientRoutes from "./routes/clientRoutes.js";
 
 dotenv.config();
 
@@ -25,7 +27,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/provider-profile", providerProfileRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/messages", messageRoutes);
-
+app.use("/api/admin", adminRoutes);
+app.use("/api/client", clientRoutes);
 // Backend test route
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -34,7 +37,6 @@ app.get("/", (req, res) => {
 });
 
 //service
-app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
 
 
