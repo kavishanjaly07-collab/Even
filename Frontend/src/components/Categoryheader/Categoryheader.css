@@ -16,9 +16,7 @@
     #f8f9f4;
 }
 
-.cat-header button,
-.cat-header select,
-.cat-header input {
+.cat-header button, .cat-header select, .cat-header input {
   font-family: inherit;
 }
 
@@ -28,14 +26,14 @@
 }
 
 /* ---------- 1. DISCIPLINES BAR ---------- */
-.discipline-bar {
+.cat-header .discipline-bar {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 16px 30px;
 }
 
-.discipline-label {
+.cat-header .discipline-label {
   font-size: 13px;
   letter-spacing: 0.5px;
   color: var(--gold-text);
@@ -43,18 +41,18 @@
 }
 
 /* Row of pills that scrolls sideways when there is no more room */
-.pill-scroll {
+.cat-header .pill-scroll {
   display: flex;
   gap: 10px;
   overflow-x: auto;
   scrollbar-width: none; /* hides the scrollbar (Firefox) */
 }
-.pill-scroll::-webkit-scrollbar {
+.cat-header .pill-scroll::-webkit-scrollbar {
   display: none; /* hides the scrollbar (Chrome, Edge, Safari) */
 }
 
 /* ---------- PILL BUTTON (used by both rows) ---------- */
-.pill {
+.cat-header .pill {
   flex-shrink: 0; /* stops pills from squashing */
   border: none;
   background: #fff;
@@ -65,50 +63,50 @@
   white-space: nowrap;
   transition: background 0.2s;
 }
-.pill:hover {
+.cat-header .pill:hover {
   background: #ece9f2;
 }
-.pill.active {
+.cat-header .pill.active {
   background: var(--purple-dark);
   color: #fff;
 }
 
 /* Milestone pills use the light gray look */
-.milestone-row .pill {
+.cat-header .milestone-row .pill {
   background: var(--field-bg);
 }
-.milestone-row .pill:hover {
+.cat-header .milestone-row .pill:hover {
   background: #e6e6e0;
 }
-.milestone-row .pill.active {
+.cat-header .milestone-row .pill.active {
   background: var(--purple-dark);
 }
 
 /* ---------- CONTENT AREA ---------- */
-.cat-inner {
+.cat-header .cat-inner {
   max-width: 940px;
   margin: 0 auto;
   padding: 10px 30px 60px;
 }
 
 /* ---------- 2. BREADCRUMB ---------- */
-.breadcrumb {
+.cat-header .breadcrumb {
   font-size: 13px;
   letter-spacing: 1px;
   color: #555;
   margin-bottom: 18px;
 }
-.breadcrumb span {
+.cat-header .breadcrumb span {
   margin: 0 4px;
-  font-size: 10px;
+  font-size: 13px;
 }
-.breadcrumb strong {
+.cat-header .breadcrumb strong {
   color: var(--gold-text);
   font-weight: 600;
 }
 
 /* ---------- 3. TITLE + LIVE CARD ---------- */
-.hero-row {
+.cat-header .hero-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -116,11 +114,11 @@
   margin-bottom: 40px;
 }
 
-.hero-left {
+.cat-header .hero-left {
   max-width: 540px;
 }
 
-.vetted-badge {
+.cat-header .vetted-badge {
   display: inline-block;
   background: var(--gold-bg);
   color: var(--gold-text);
@@ -131,21 +129,21 @@
   margin-bottom: 14px;
 }
 
-.hero-left h1 {
+.cat-header .hero-left h1 {
   font-family: "Playfair Display", serif;
   font-size: 44px;
   line-height: 1.15;
   margin-bottom: 16px;
 }
 
-.hero-left p {
+.cat-header .hero-left p {
   font-size: 14px;
   line-height: 1.6;
   color: #444;
   max-width: 500px;
 }
 
-.live-card {
+.cat-header .live-card {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -155,11 +153,11 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
   font-size: 13px;
 }
-.live-card p {
+.cat-header .live-card p {
   margin-top: 4px;
 }
 
-.live-icon {
+.cat-header .live-icon {
   width: 38px;
   height: 38px;
   display: flex;
@@ -169,13 +167,13 @@
   border-radius: 10px;
 }
 
-.live-title {
+.cat-header .live-title {
   letter-spacing: 1px;
   color: #444;
 }
 
 /* Small green dot */
-.dot {
+.cat-header .dot {
   display: inline-block;
   width: 6px;
   height: 6px;
@@ -186,14 +184,14 @@
 }
 
 /* ---------- 4. FILTER CARD ---------- */
-.filter-card {
+.cat-header .filter-card {
   background: #fff;
   padding: 24px;
   border-radius: 20px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 }
 
-.filter-row {
+.cat-header .filter-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -201,7 +199,7 @@
   margin-bottom: 14px;
 }
 
-.search-box {
+.cat-header .search-box {
   flex: 1;
   min-width: 220px;
   display: flex;
@@ -211,9 +209,9 @@
   padding: 0 16px;
   border-radius: 12px;
   height: 38px;
-  font-size: 12px;
+  font-size: 13px;
 }
-.search-box input {
+.cat-header .search-box input {
   flex: 1;
   border: none;
   background: transparent;
@@ -221,14 +219,14 @@
   font-size: 13px;
 }
 
-.sort-label {
+.cat-header .sort-label {
   font-size: 13px;
   letter-spacing: 1px;
   color: #555;
   margin-left: 6px;
 }
 
-.select {
+.cat-header .select {
   height: 38px;
   padding: 0 14px;
   border: none;
@@ -237,11 +235,11 @@
   font-size: 13px;
   cursor: pointer;
 }
-.sort-select {
+.cat-header .sort-select {
   min-width: 200px;
 }
 
-.toggle {
+.cat-header .toggle {
   height: 38px;
   padding: 0 16px;
   border: none;
@@ -251,15 +249,15 @@
   cursor: pointer;
 }
 /* When a toggle is turned ON */
-.toggle.on {
+.cat-header .toggle.on {
   background: var(--purple-dark);
   color: #fff;
 }
-.star {
+.cat-header .star {
   color: #eab308;
 }
 
-.reset {
+.cat-header .reset {
   margin-left: auto; /* pushes the reset button to the right */
   border: none;
   background: transparent;
@@ -269,18 +267,18 @@
   cursor: pointer;
   padding: 0 10px;
 }
-.reset:hover {
+.cat-header .reset:hover {
   color: var(--purple-dark);
 }
 
 /* Milestone row */
-.milestone-row {
+.cat-header .milestone-row {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 6px;
 }
-.milestone-label {
+.cat-header .milestone-label {
   font-size: 13px;
   letter-spacing: 1px;
   color: #555;
@@ -289,22 +287,21 @@
 
 /* ---------- SMALL SCREENS ---------- */
 @media (max-width: 800px) {
-  .hero-row {
+  .cat-header .hero-row {
     flex-direction: column;
     align-items: flex-start;
   }
-  .hero-left h1 {
+  .cat-header .hero-left h1 {
     font-size: 34px;
   }
-  .discipline-bar,
-  .milestone-row {
+  .cat-header .discipline-bar, .cat-header .milestone-row {
     flex-direction: column;
     align-items: flex-start;
   }
-  .pill-scroll {
+  .cat-header .pill-scroll {
     max-width: 100%;
   }
-  .reset {
+  .cat-header .reset {
     margin-left: 0;
   }
 }

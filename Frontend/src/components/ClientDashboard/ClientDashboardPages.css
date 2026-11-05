@@ -3,15 +3,15 @@
   min-height: 100vh;
   background: #fff8ff;
   color: #34283a;
-  font-family: "DM Sans", "Plus Jakarta Sans", Arial, sans-serif;
+  font-family: var(--font-family);
 }
 
-.client-extra-main {
+.client-extra-app .client-extra-main {
   min-width: 0;
   flex: 1;
 }
 
-.client-extra-topbar {
+.client-extra-app .client-extra-topbar {
   min-height: 72px;
   display: flex;
   align-items: center;
@@ -22,7 +22,7 @@
   background: #fff;
 }
 
-.client-extra-topbar > label {
+.client-extra-app .client-extra-topbar > label {
   width: min(510px, 60%);
   display: flex;
   align-items: center;
@@ -33,35 +33,35 @@
   color: #9c90a0;
 }
 
-.client-extra-topbar input {
+.client-extra-app .client-extra-topbar input {
   width: 100%;
   border: 0;
   outline: 0;
   color: #34283a;
   font: inherit;
-  font-size: 11px;
+  font-size: 13px;
 }
 
-.client-extra-user {
+.client-extra-app .client-extra-user {
   display: flex;
   align-items: center;
   gap: 9px;
   white-space: nowrap;
 }
 
-.client-extra-user > span:nth-child(2) {
+.client-extra-app .client-extra-user > span:nth-child(2) {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: 10px;
+  font-size: 13px;
 }
 
-.client-extra-user small {
+.client-extra-app .client-extra-user small {
   color: #8f8494;
-  font-size: 9px;
+  font-size: 13px;
 }
 
-.client-extra-avatar {
+.client-extra-app .client-extra-avatar {
   width: 32px;
   height: 32px;
   display: grid;
@@ -72,29 +72,29 @@
   font-weight: 700;
 }
 
-.client-extra-user > b {
+.client-extra-app .client-extra-user > b {
   padding: 3px 5px;
   border-radius: 5px;
   background: #f9e9a6;
   color: #765b00;
-  font-size: 8px;
+  font-size: 13px;
 }
 
-.client-extra-content {
+.client-extra-app .client-extra-content {
   display: flex;
   flex-direction: column;
   gap: 20px;
   padding: 26px 30px;
 }
 
-.client-extra-heading > span {
+.client-extra-app .client-extra-heading > span {
   color: #9b741b;
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 1px;
 }
 
-.client-extra-heading h1 {
+.client-extra-app .client-extra-heading h1 {
   margin: 6px 0;
   color: #33263a;
   font-family: "Playfair Display", Georgia, serif;
@@ -102,21 +102,19 @@
   font-weight: 500;
 }
 
-.client-extra-heading p,
-.client-extra-card-heading p {
+.client-extra-app .client-extra-heading p, .client-extra-app .client-extra-card-heading p {
   margin: 0;
   color: #8c7e91;
-  font-size: 12px;
+  font-size: 13px;
 }
 
-.client-extra-summary {
+.client-extra-app .client-extra-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
-.client-extra-summary article,
-.client-extra-card {
+.client-extra-app .client-extra-summary article, .client-extra-app .client-extra-card {
   padding: 19px;
   border: 1px solid #f0e8f2;
   border-radius: 13px;
@@ -124,39 +122,38 @@
   box-shadow: 0 6px 22px #55305b08;
 }
 
-.client-extra-summary article {
+.client-extra-app .client-extra-summary article {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.client-extra-summary small {
+.client-extra-app .client-extra-summary small {
   color: #8a8190;
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: .6px;
 }
 
-.client-extra-summary strong {
+.client-extra-app .client-extra-summary strong {
   color: #642078;
   font-family: "Playfair Display", Georgia, serif;
   font-size: 25px;
 }
 
-.client-extra-summary span {
+.client-extra-app .client-extra-summary span {
   color: #8c7e91;
-  font-size: 10px;
+  font-size: 13px;
 }
 
-.client-extra-card-heading,
-.client-extra-review-heading {
+.client-extra-app .client-extra-card-heading, .client-extra-app .client-extra-review-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
 }
 
-.client-extra-card-heading h2 {
+.client-extra-app .client-extra-card-heading h2 {
   margin: 0 0 4px;
   color: #392b40;
   font-family: "Playfair Display", Georgia, serif;
@@ -164,17 +161,17 @@
   font-weight: 500;
 }
 
-.client-extra-card-heading a {
+.client-extra-app .client-extra-card-heading a {
   color: #873ca0;
-  font-size: 11px;
+  font-size: 13px;
   text-decoration: none;
 }
 
-.client-extra-table {
+.client-extra-app .client-extra-table {
   margin-top: 16px;
 }
 
-.client-extra-table-row {
+.client-extra-app .client-extra-table-row {
   display: grid;
   grid-template-columns: 1.5fr .8fr .7fr 1fr;
   align-items: center;
@@ -182,22 +179,21 @@
   padding: 14px 8px;
   border-top: 1px solid #f0e8f2;
   color: #675a6e;
-  font-size: 11px;
+  font-size: 13px;
 }
 
-.client-extra-table-row strong,
-.client-extra-table-row b {
+.client-extra-app .client-extra-table-row strong, .client-extra-app .client-extra-table-row b {
   color: #392b40;
 }
 
-.client-extra-table-head {
+.client-extra-app .client-extra-table-head {
   color: #8a8190;
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: .5px;
 }
 
-.client-extra-status {
+.client-extra-app .client-extra-status {
   width: fit-content;
   padding: 5px 9px;
   border-radius: 20px;
@@ -205,31 +201,31 @@
   color: #753083;
 }
 
-.client-extra-reviews article {
+.client-extra-app .client-extra-reviews article {
   padding: 16px 0;
   border-top: 1px solid #f0e8f2;
 }
 
-.client-extra-review-heading h3 {
+.client-extra-app .client-extra-review-heading h3 {
   margin: 0 0 4px;
   color: #392b40;
   font-size: 13px;
 }
 
-.client-extra-review-heading small {
+.client-extra-app .client-extra-review-heading small {
   color: #8c7e91;
-  font-size: 10px;
+  font-size: 13px;
 }
 
-.client-extra-review-heading > span {
+.client-extra-app .client-extra-review-heading > span {
   color: #d9a900;
   letter-spacing: 1px;
 }
 
-.client-extra-reviews article > p {
+.client-extra-app .client-extra-reviews article > p {
   margin: 10px 0 0;
   color: #675a6e;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -238,32 +234,31 @@
     flex-direction: column;
   }
 
-  .client-extra-topbar {
+  .client-extra-app .client-extra-topbar {
     padding: 12px 15px;
   }
 
-  .client-extra-topbar > label {
+  .client-extra-app .client-extra-topbar > label {
     width: 100%;
   }
 
-  .client-extra-user > span:nth-child(2),
-  .client-extra-user > b {
+  .client-extra-app .client-extra-user > span:nth-child(2), .client-extra-app .client-extra-user > b {
     display: none;
   }
 
-  .client-extra-content {
+  .client-extra-app .client-extra-content {
     padding: 20px 15px;
   }
 
-  .client-extra-summary {
+  .client-extra-app .client-extra-summary {
     grid-template-columns: 1fr;
   }
 
-  .client-extra-table-row {
+  .client-extra-app .client-extra-table-row {
     grid-template-columns: 1fr 1fr;
   }
 
-  .client-extra-table-head {
+  .client-extra-app .client-extra-table-head {
     display: none;
   }
 }

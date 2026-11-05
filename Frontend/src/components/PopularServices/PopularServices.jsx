@@ -68,8 +68,7 @@ function ServiceCard({ image, rating, reviews, title, text, priceLabel, price })
             <span className="price-label">{priceLabel}</span>
             <strong className="price">{price}</strong>
           </div>
-          {/* Opens the Payment page (needs React Router) */}
-          <Link to="/payment" className="book-btn">Book Now</Link>
+          <Link to="/BrowseServices" className="book-btn">Book Now</Link>
         </div>
       </div>
     </article>
@@ -79,7 +78,7 @@ function ServiceCard({ image, rating, reviews, title, text, priceLabel, price })
 // ---------- MAIN COMPONENT ----------
 export default function PopularServices() {
   return (
-    <section className="popular-section">
+    <section id="popular-services" className="popular-section">
       <div className="popular-inner">
         <div className="popular-heading">
           <span className="eyebrow">IN HIGH DEMAND</span>

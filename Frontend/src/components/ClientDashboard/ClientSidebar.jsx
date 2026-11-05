@@ -9,6 +9,7 @@ import {
   UserRound,
   WalletCards,
 } from "lucide-react";
+import BrandLogo from "../BrandLogo";
 import "./ClientSidebar.css";
 
 const links = [
@@ -25,7 +26,7 @@ export default function ClientSidebar({ onHelp, onLogout }) {
   return (
     <aside className="client-sidebar">
       <div className="client-sidebar-brand">
-        <span className="client-sidebar-brand-mark">✦</span>
+        <BrandLogo className="client-sidebar-brand-mark" />
         <span className="client-sidebar-brand-copy">
           <strong>Event Connect</strong>
           <small>PREMIER ATELIER</small>

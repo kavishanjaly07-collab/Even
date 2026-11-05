@@ -70,7 +70,10 @@ export const authApi = {
 export const serviceApi = {
   getPublicServices: () => request("/api/services", { authenticated: false }),
   getMyServices: () => get("/api/services/my-services"),
+  getProviderStatus: () => get("/api/services/provider-status"),
+  getMine: (id) => get(`/api/services/${encodeURIComponent(id)}`),
   create: (service) => request("/api/services", { method: "POST", body: service }),
+  publish: (id) => request(`/api/services/${encodeURIComponent(id)}/publish`, { method: "POST" }),
   update: (id, service) => request(`/api/services/${encodeURIComponent(id)}`, {
     method: "PUT",
     body: service,
@@ -127,6 +130,7 @@ export const adminApi = {
   getServices: () => get("/api/admin/services"),
   getCategories: () => get("/api/admin/categories"),
   getServiceCategoryStats: () => get("/api/admin/service-category/stats"),
+  getPlatformSettings: () => get("/api/admin/settings"),
   createService: (service) => request("/api/admin/services", { method: "POST", body: service }),
   updateService: (id, service) => request(`/api/admin/services/${encodeURIComponent(id)}`, {
     method: "PUT",

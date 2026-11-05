@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import BrandLogo from "../BrandLogo";
 import "./AdminSidebar.css";
 
 const links = [
@@ -19,13 +20,13 @@ export default function AdminSidebar() {
 
   function signOut() {
     clearSession();
-    navigate("/admin/login", { replace: true });
+    navigate("/login", { replace: true });
   }
 
   return (
     <aside className="admin-sidebar">
       <div className="admin-logo">
-        <span className="admin-logo-icon" aria-hidden="true">✦</span>
+        <BrandLogo className="admin-logo-icon" />
         <span className="admin-logo-copy">
           <strong>Event Connect</strong>
           <small>ADMIN SUITE</small>

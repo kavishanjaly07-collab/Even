@@ -1,44 +1,44 @@
-import { useState } from "react";
 import { Bell } from "lucide-react";
-import { portalTabs, navLinks } from "../../data/siteData";
+import { useState } from "react";
+import { navLinks } from "../../data/siteData";
+import BrandLogo from "../BrandLogo";
 import "./Navbar.css";
 import { useNavigate } from "react-router-dom";
 
 
 export default 
 function Navbar() {
-  const [activePortal, setActivePortal] = useState(portalTabs[0]);
-  const [activeLink, setActiveLink] = useState("Providers");
+  const [activeLink, setActiveLink] = useState("Services");
   const navigate = useNavigate();
+  const destinations = {
+    Services: { sectionId: "popular-services" },
+    "How It Works": { sectionId: "how-it-works" },
+    Categories: { sectionId: "categories" },
+  };
 
   return (
     <header className="navbar">
-      <img src="./src/assets/logo.jpg" alt="Logo" className="navbar__logo" />
-
-      <div className="navbar__portals">
-        {portalTabs.map((tab) => (
-          <button
-            key={tab}
-            className={`navbar__portal ${activePortal === tab ? "is-active" : ""}`}
-            onClick={() => {
-              setActivePortal(tab);
-              if (tab === "Admin Suite") navigate("/admin/login");
-            }}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <BrandLogo className="navbar__logo" />
 
       <nav className="navbar__links">
         {navLinks.map((link) => (
           <a
             key={link}
-            href="#"
+            href={destinations[link].path || `#${destinations[link].sectionId}`}
             className={`navbar__link ${activeLink === link ? "is-active" : ""}`}
             onClick={(e) => {
               e.preventDefault();
               setActiveLink(link);
+              const destination = destinations[link];
+              if (destination.path) {
+                navigate(destination.path);
+                return;
+              }
+
+              document
+                .getElementById(destination.sectionId)
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              window.history.replaceState(null, "", `#${destination.sectionId}`);
             }}
           >
             {link}
@@ -56,7 +56,7 @@ function Navbar() {
           Home
         </Link> */}
          <button className="btn btn--outline" onClick={() => navigate("/register")}>Register</button> 
-        <button className="btn btn--plum btn--sm">Book Services</button>
+        {/* <button className="btn btn--plum btn--sm">Book Services</button> */}
         <button className="navbar__bell" aria-label="Notifications">
           <Bell size={16} />
           <span className="navbar__dot" />

@@ -55,7 +55,7 @@ function CategoryCard({ icon, name, count }) {
 // ---------- MAIN COMPONENT ----------
 export default function Categories() {
   return (
-    <section className="categories-section">
+    <section id="categories" className="categories-section">
       {/* Stats row */}
       <div className="stats-row">
         {stats.map((item) => (

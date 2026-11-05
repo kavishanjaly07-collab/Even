@@ -1,132 +1,107 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { serviceApi } from "../../services/api";
 import "./Payment.css";
 
-const EMPTY_FORM = {
-  cardholderName: "",
-  cardNumber: "",
-  expiryDate: "",
-  cvv: "",
-};
-
 export default function Payment() {
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [message, setMessage] = useState("");
+  const { state } = useLocation();
+  const { user } = useAuth();
+  const [service, setService] = useState(null);
+  const [serviceError, setServiceError] = useState("");
+  const [subscription, setSubscription] = useState(null);
+  const [subscriptionError, setSubscriptionError] = useState("");
 
-  function handleChange(event) {
-    const { name, value } = event.target;
-    let nextValue = value;
+  useEffect(() => {
+    let active = true;
+    if (!state?.serviceId) return undefined;
 
-    if (name === "cardNumber") {
-      nextValue = value.replace(/\D/g, "").slice(0, 16);
-    } else if (name === "expiryDate") {
-      const digits = value.replace(/\D/g, "").slice(0, 4);
-      nextValue = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
-    } else if (name === "cvv") {
-      nextValue = value.replace(/\D/g, "").slice(0, 3);
-    }
+    serviceApi.getMine(state.serviceId)
+      .then(({ service: currentService }) => {
+        if (active) setService(currentService);
+      })
+      .catch((error) => {
+        if (active) setServiceError(error.message);
+      });
 
-    setForm((current) => ({ ...current, [name]: nextValue }));
-    setMessage("");
-  }
+    return () => {
+      active = false;
+    };
+  }, [state?.serviceId]);
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  useEffect(() => {
+    let active = true;
+    serviceApi.getProviderStatus()
+      .then((status) => {
+        if (active) setSubscription(status.subscription);
+      })
+      .catch((error) => {
+        if (active) setSubscriptionError(error.message);
+      });
 
-    if (!form.cardholderName.trim() || !form.cardNumber || !form.expiryDate || !form.cvv) {
-      setMessage("Please fill in all fields.");
-      return;
-    }
-    if (!/^\d{16}$/.test(form.cardNumber)) {
-      setMessage("Card number must contain 16 digits.");
-      return;
-    }
+    return () => {
+      active = false;
+    };
+  }, []);
 
-    const expiryMatch = form.expiryDate.match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
-    if (!expiryMatch) {
-      setMessage("Enter a valid expiry date in MM/YY format.");
-      return;
-    }
-
-    const expiryMonth = Number(expiryMatch[1]);
-    const expiryYear = 2000 + Number(expiryMatch[2]);
-    const now = new Date();
-    if (expiryYear < now.getFullYear() || (expiryYear === now.getFullYear() && expiryMonth < now.getMonth() + 1)) {
-      setMessage("Expiry date must be in the future.");
-      return;
-    }
-
-    if (!/^\d{3}$/.test(form.cvv)) {
-      setMessage("CVV must contain 3 digits.");
-      return;
-    }
-
-    setForm(EMPTY_FORM);
-    setMessage("Demo only – real payment processing is not available.");
-  }
+  const isPublishing = state?.source === "publish-service";
 
   return (
     <div className="payment-page">
-      <form className="payment-card" onSubmit={handleSubmit} autoComplete="off">
-        <h1 id="payment-title">PAYMENT</h1>
-        <p className="payment-demo-notice">
-          Demo only. No real payment will be processed.
+      <section className="payment-card" aria-labelledby="payment-title">
+        <p className="payment-eyebrow">SERVICE PROVIDER</p>
+        <h1 id="payment-title">{isPublishing ? "Subscription Required to Publish" : "Service Registration Payment"}</h1>
+        <p className="payment-message">
+          {isPublishing
+            ? subscription?.status === "Expired"
+              ? "Your subscription has expired. Renew it before publishing this service."
+              : "An active subscription is required to publish this service. You can continue adding up to five services for free."
+            : "No subscription payment is required to add a service. Add up to five services for free; an active subscription is required to publish them."}
         </p>
-
-        <label htmlFor="cardholderName">Cardholder Name</label>
-        <input
-          id="cardholderName"
-          name="cardholderName"
-          type="text"
-          value={form.cardholderName}
-          onChange={handleChange}
-          autoComplete="off"
-        />
-
-        <label htmlFor="cardNumber">Card Number</label>
-        <input
-          id="cardNumber"
-          name="cardNumber"
-          type="text"
-          inputMode="numeric"
-          maxLength={16}
-          value={form.cardNumber}
-          onChange={handleChange}
-          autoComplete="off"
-        />
-
-        <div className="row">
-          <div className="column">
-            <label htmlFor="expiryDate">Expiry Date</label>
-            <input
-              id="expiryDate"
-              name="expiryDate"
-              type="text"
-              inputMode="numeric"
-              placeholder="MM/YY"
-              maxLength={5}
-              value={form.expiryDate}
-              onChange={handleChange}
-              autoComplete="off"
-            />
+        {isPublishing && (
+          <div className="payment-service-summary">
+            {serviceError ? (
+              <p role="alert">{serviceError}</p>
+            ) : service ? (
+              <>
+                <strong>{service.title}</strong>
+                <span>{service.category} · LKR {Number(service.price).toLocaleString("en-US")} {service.priceUnit || ""}</span>
+                <p>{service.description || "No description provided."}</p>
+                <small>Service ID: {service._id}</small>
+              </>
+            ) : (
+              <span role="status">Loading selected service...</span>
+            )}
           </div>
-          <div className="column">
-            <label htmlFor="cvv">CVV</label>
-            <input
-              id="cvv"
-              name="cvv"
-              type="password"
-              inputMode="numeric"
-              maxLength={3}
-              value={form.cvv}
-              onChange={handleChange}
-              autoComplete="off"
-            />
-          </div>
+        )}
+        {subscriptionError ? (
+          <p className="payment-error" role="alert">{subscriptionError}</p>
+        ) : subscription && (
+          <dl className="payment-plan">
+            <div><dt>Subscription status</dt><dd>{subscription.status}</dd></div>
+            <div><dt>Plan</dt><dd>{subscription.planName || "Not configured"}</dd></div>
+            <div>
+              <dt>Plan amount</dt>
+              <dd>
+                {subscription.amount == null
+                  ? "Not configured"
+                  : `${subscription.currency || ""} ${Number(subscription.amount).toLocaleString("en-US")}`.trim()}
+              </dd>
+            </div>
+          </dl>
+        )}
+        <div className="payment-placeholder" role="status">
+          <strong>Payment gateway integration coming soon</strong>
+          <span>No payment has been taken, no subscription status has been changed, and no service has been published.</span>
         </div>
-
-        <button type="submit" className="pay-btn">PAY</button>
-        {message && <p className="payment-message" role="status">{message}</p>}
-      </form>
+        {state?.providerId || user?.id ? (
+          <p className="payment-reference">Provider ID: {state?.providerId || user.id}</p>
+        ) : null}
+        <div className="payment-actions">
+          <Link className="payment-home-link" to="/MyServices">Back to My Services</Link>
+          <Link className="payment-back-link" to="/ProviderHome">Back to Dashboard</Link>
+        </div>
+      </section>
     </div>
   );
 }

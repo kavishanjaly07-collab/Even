@@ -13,99 +13,96 @@
   border-right: 1px solid #f0e7f2;
   background: #fff;
   color: #554c59;
-  font-family: "DM Sans", "Plus Jakarta Sans", Arial, sans-serif;
+  font-family: "Plus Jakarta Sans", "DM Sans", Arial, sans-serif;
 }
 
-.client-sidebar-brand {
+.client-sidebar .client-sidebar-brand {
   display: flex;
   flex: 0 0 70px;
   align-items: flex-start;
-  gap: 10px;
-  padding: 2px 8px 18px;
+  gap: 9px;
+  padding: 2px 5px 18px;
   border-bottom: 1px solid #f4edf5;
 }
 
-.client-sidebar-brand-mark {
+.client-sidebar .client-sidebar-brand-mark {
   display: grid;
-  flex: 0 0 35px;
-  width: 35px;
-  height: 35px;
-  place-items: center;
-  border-radius: 10px;
-  background: linear-gradient(140deg, #a94db1, #6d2d82);
-  box-shadow: 0 5px 12px #8e3da026;
-  color: #fff;
-  font-size: 19px;
+  flex: 0 0 82px;
+  width: 82px;
+  height: 45px;
+  border-radius: 4px;
+  object-fit: contain;
 }
 
-.client-sidebar-brand-copy {
+.client-sidebar .client-sidebar-brand-copy {
   display: flex;
   flex-direction: column;
   gap: 3px;
   padding-top: 2px;
 }
 
-.client-sidebar-brand-copy strong {
+.client-sidebar .client-sidebar-brand-copy strong {
   color: #753083;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: -.3px;
 }
 
-.client-sidebar-brand-copy small {
+.client-sidebar .client-sidebar-brand-copy small {
   color: #b18b39;
-  font-size: 8px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 1.1px;
 }
 
-.client-sidebar-nav {
+.client-sidebar .client-sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 18px 0;
+  gap: 7px;
+  padding: 16px 0;
 }
 
-.client-sidebar-link {
+.client-sidebar .client-sidebar-link {
   display: flex;
   width: 100%;
-  min-height: 39px;
+  min-height: 42px;
   align-items: center;
-  gap: 11px;
-  padding: 0 12px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 0 11px;
+  border-radius: 9px;
   color: #594d60;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-size-sidebar);
+  font-weight: 600;
+  line-height: 1.35;
   text-align: left;
   text-decoration: none;
   transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
 }
 
-.client-sidebar-link svg {
-  flex: 0 0 16px;
+.client-sidebar .client-sidebar-link svg {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
   color: currentColor;
 }
 
-.client-sidebar-link:hover {
+.client-sidebar .client-sidebar-link:hover {
   background: #faf4fc;
 }
 
-.client-sidebar-link.is-active {
+.client-sidebar .client-sidebar-link.is-active {
   background: #873ca0;
-  box-shadow: 0 5px 12px #8e3da020;
+  box-shadow: 0 4px 10px #8e3da026;
   color: #fff;
   font-weight: 600;
 }
 
-.client-sidebar-link:focus-visible,
-.client-sidebar-help button:focus-visible,
-.client-sidebar-logout:focus-visible {
+.client-sidebar .client-sidebar-link:focus-visible, .client-sidebar .client-sidebar-help button:focus-visible, .client-sidebar .client-sidebar-logout:focus-visible {
   outline: 2px solid #d9a900;
   outline-offset: 2px;
 }
 
-.client-sidebar-bottom {
+.client-sidebar .client-sidebar-bottom {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -113,35 +110,35 @@
   padding: 0 0 2px;
 }
 
-.client-sidebar-help {
+.client-sidebar .client-sidebar-help {
   padding: 13px 12px 12px;
   border: 1px solid #f1e4f5;
   border-radius: 11px;
   background: linear-gradient(145deg, #fcf7fd, #f8effb);
 }
 
-.client-sidebar-help strong {
+.client-sidebar .client-sidebar-help strong {
   display: flex;
   align-items: center;
   gap: 6px;
   color: #3d3341;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
 }
 
-.client-sidebar-help strong span {
+.client-sidebar .client-sidebar-help strong span {
   color: #b28a25;
   font-size: 13px;
 }
 
-.client-sidebar-help p {
+.client-sidebar .client-sidebar-help p {
   margin: 8px 0 11px;
   color: #7c6e82;
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.55;
 }
 
-.client-sidebar-help button {
+.client-sidebar .client-sidebar-help button {
   width: 100%;
   min-height: 30px;
   border: 0;
@@ -150,12 +147,12 @@
   color: #4c3c00;
   cursor: pointer;
   font: inherit;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
 }
 
-.client-sidebar-logout {
+.client-sidebar .client-sidebar-logout {
   display: flex;
   min-height: 35px;
   align-items: center;
@@ -167,27 +164,23 @@
   color: #76687d;
   cursor: pointer;
   font: inherit;
-  font-size: 11px;
+  font-size: 13px;
   text-align: left;
 }
 
-.client-sidebar-logout:hover {
+.client-sidebar .client-sidebar-logout:hover {
   background: #faf4fc;
   color: #642078;
 }
 
-.eb-page,
-.ec-page,
-.ep-page {
+.client-sidebar .eb-page, .client-sidebar .ec-page, .client-sidebar .ep-page {
   min-height: 100vh;
   padding: 0;
   display: block;
   background: #fff8ff;
 }
 
-.eb-page > .eb-app,
-.ec-page > .ec-messages-app,
-.ep-page > .ep-app {
+.client-sidebar .eb-page > .eb-app, .client-sidebar .ec-page > .ec-messages-app, .client-sidebar .ep-page > .ep-app {
   display: flex;
   width: 100%;
   max-width: none;
@@ -199,9 +192,7 @@
   box-shadow: none;
 }
 
-.eb-main,
-.ep-main,
-.ec-messages-main {
+.client-sidebar .eb-main, .client-sidebar .ep-main, .client-sidebar .ec-messages-main {
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -219,42 +210,44 @@
     border-bottom: 1px solid #f0e7f2;
   }
 
-  .client-sidebar-brand {
+  .client-sidebar .client-sidebar-brand {
     flex-basis: auto;
     align-items: center;
     padding: 0 4px 11px;
   }
 
-  .client-sidebar-nav {
+  .client-sidebar .client-sidebar-brand-mark {
+    flex-basis: 82px;
+  }
+
+  .client-sidebar .client-sidebar-nav {
     flex-direction: row;
-    gap: 5px;
+    gap: 7px;
     overflow-x: auto;
     padding: 10px 0 3px;
     scrollbar-width: thin;
   }
 
-  .client-sidebar-link {
+  .client-sidebar .client-sidebar-link {
     width: auto;
     flex: 0 0 auto;
-    min-height: 36px;
+    min-height: 42px;
     padding: 0 10px;
     white-space: nowrap;
   }
 
-  .client-sidebar-bottom {
+  .client-sidebar .client-sidebar-bottom {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     margin-top: 7px;
   }
 
-  .client-sidebar-help {
+  .client-sidebar .client-sidebar-help {
     display: none;
   }
 
-  .eb-page > .eb-app,
-  .ec-page > .ec-messages-app,
-  .ep-page > .ep-app {
+  .client-sidebar .eb-page > .eb-app, .client-sidebar .ec-page > .ec-messages-app, .client-sidebar .ep-page > .ep-app {
     display: flex;
     flex-direction: column;
     min-height: 100vh;

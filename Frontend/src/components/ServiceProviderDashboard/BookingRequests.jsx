@@ -1,6 +1,9 @@
 
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { bookingApi } from "../../services/api";
+import BrandLogo from "../BrandLogo";
 import "./BookingRequests.css";
 
 const menuItems = [
@@ -12,9 +15,7 @@ const menuItems = [
   ["✉", "Messages"],
   ["☆", "Reviews & Ratings"],
   ["♙", "Subscription & Membership"],
-  ["♧", "Notifications"],
   ["♙", "My Profile"],
-  ["?", "Help & Support"],
   ["↪", "Logout"],
 ];
 
@@ -23,11 +24,12 @@ const filters = [
   "New Requests",
   "Pending / Awaiting",
   "Confirmed",
-  "Completed",
   "Rejected",
 ];
 
 function BookingRequests() {
+  const navigate = useNavigate();
+  const { user, clearSession } = useAuth();
   const [activeMenu, setActiveMenu] = useState("Booking Requests");
   const [activeFilter, setActiveFilter] = useState("All Bookings");
   const [bookings, setBookings] = useState([]);
@@ -37,6 +39,9 @@ function BookingRequests() {
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const [dateFilter, setDateFilter] = useState("All Dates");
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   useEffect(() => {
     let active = true;
@@ -63,9 +68,11 @@ function BookingRequests() {
     };
   }, []);
 
-  const statusCount = (status) => bookings.filter((booking) => booking.status === status).length;
+  const statusCount = (status) => loading || loadError
+    ? "—"
+    : bookings.filter((booking) => booking.status === status).length;
   const stats = [
-    { label: "TOTAL REQUESTS", value: bookings.length, sub: "All provider requests", icon: "▤", type: "purple" },
+    { label: "TOTAL REQUESTS", value: loading || loadError ? "—" : bookings.length, sub: "All provider requests", icon: "▤", type: "purple" },
     { label: "PENDING", value: statusCount("Pending"), sub: "Requires action", icon: "◷", type: "yellow" },
     { label: "ACCEPTED", value: statusCount("Accepted"), sub: "Accepted requests", icon: "◉", type: "green" },
     { label: "REJECTED", value: statusCount("Rejected"), sub: "Rejected requests", icon: "×", type: "red" },
@@ -87,9 +94,35 @@ function BookingRequests() {
       (activeFilter === "Pending / Awaiting" && booking.status === "Pending") ||
       (activeFilter === "Confirmed" && booking.status === "Accepted") ||
       (activeFilter === "Rejected" && booking.status === "Rejected");
+    const matchesCategory = categoryFilter === "All Categories" || service.category === categoryFilter;
+    const eventDate = new Date(booking.eventDate);
+    const monthKey = Number.isNaN(eventDate.getTime())
+      ? ""
+      : `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, "0")}`;
+    const matchesDate = dateFilter === "All Dates" || monthKey === dateFilter;
 
-    return matchesSearch && matchesFilter;
+    return matchesSearch && matchesFilter && matchesCategory && matchesDate;
   });
+  const categories = [...new Set(bookings.map((booking) => booking.service?.category).filter(Boolean))].sort();
+  const dateOptions = [...new Set(bookings.map((booking) => {
+    const date = new Date(booking.eventDate);
+    return Number.isNaN(date.getTime())
+      ? ""
+      : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  }).filter(Boolean))].sort((left, right) => right.localeCompare(left));
+  const calendarDays = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate();
+  const calendarTitle = calendarMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const countForFilter = (filter) => {
+    if (loading || loadError) return "—";
+    if (filter === "All Bookings") return bookings.length;
+    if (filter === "New Requests" || filter === "Pending / Awaiting") return statusCount("Pending");
+    if (filter === "Confirmed") return statusCount("Accepted");
+    return statusCount("Rejected");
+  };
+
+  function changeCalendarMonth(amount) {
+    setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + amount, 1));
+  }
 
   async function updateBooking(status) {
     if (!selectedBooking || selectedBooking.status !== "Pending") return;
@@ -121,7 +154,7 @@ function BookingRequests() {
       {/* SIDEBAR */}
       <aside className="bc-sidebar">
         <div className="bc-logo">
-          <span className="bc-logo-icon">✦</span>
+          <BrandLogo className="bc-logo-icon" />
           <span>Event Connect</span>
         </div>
 
@@ -136,19 +169,26 @@ function BookingRequests() {
               className={`bc-nav-item ${
                 activeMenu === label ? "active" : ""
               } ${label === "Logout" ? "logout" : ""}`}
-              onClick={() => setActiveMenu(label)}
+              onClick={() => {
+                if (label === "Logout") {
+                  clearSession();
+                  navigate("/login", { replace: true });
+                  return;
+                }
+                setActiveMenu(label);
+                if (label === "Overview") navigate("/ProviderHome");
+                else if (label === "My Services") navigate("/MyServices");
+                else if (label === "Availability Calendar") navigate("/AvailabilityCalendar");
+                else if (label !== "Booking Requests") {
+                  navigate("/ProviderHome", { state: { providerPage: label } });
+                }
+              }}
             >
               <span className="bc-nav-icon">{icon}</span>
               <span>{label}</span>
 
               {label === "Booking Requests" && (
                 <span className="bc-nav-count">{statusCount("Pending")}</span>
-              )}
-              {label === "Messages" && (
-                <span className="bc-message-dot">3</span>
-              )}
-              {label === "Subscription & Membership" && (
-                <span className="bc-pro">PRO</span>
               )}
             </button>
           ))}
@@ -157,8 +197,8 @@ function BookingRequests() {
         <div className="bc-sidebar-help">
           <strong>ARTISAN CONCIERGE</strong>
           <p>Need support or assistance? We're here to help.</p>
-          <button onClick={() => setMessage("Contact support selected.")}>
-            ♡ Contact Desk
+          <button onClick={() => setMessage("Support contact information is not configured.")}>
+            Support details
           </button>
         </div>
       </aside>
@@ -182,15 +222,15 @@ function BookingRequests() {
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            <button className="bc-top-icon">🔔</button>
-            <button className="bc-top-icon">✉</button>
+            <button className="bc-top-icon" type="button" aria-label="Notifications" onClick={() => setMessage("Notifications are not configured.")}>🔔</button>
+            <button className="bc-top-icon" type="button" aria-label="Messages" onClick={() => navigate("/ProviderHome", { state: { providerPage: "Messages" } })}>✉</button>
 
             <div className="bc-user">
               <div>
-                <strong>Lumina Events</strong>
-                <small>Creative Manager</small>
+                <strong>{user?.username || "Service Provider"}</strong>
+                <small>Service Provider</small>
               </div>
-              <span className="bc-user-avatar">L</span>
+              <span className="bc-user-avatar">{user?.username?.charAt(0).toUpperCase() || "P"}</span>
             </div>
           </div>
         </header>
@@ -210,12 +250,7 @@ function BookingRequests() {
             <button className="bc-outline-button" onClick={() => window.print()}>
               ♧ Export Booking Report
             </button>
-            <button
-              className="bc-primary-button"
-              onClick={() => setMessage("Custom quotation selected.")}
-            >
-              + Custom Quotation
-            </button>
+            <button className="bc-primary-button" type="button" disabled title="Quotation support is not configured.">Custom quotations unavailable</button>
           </div>
         </section>
 
@@ -250,29 +285,20 @@ function BookingRequests() {
                 }`}
               >
                 {filter}
-                <span>{filter === "All Bookings" ? bookings.length : filter === "New Requests" || filter === "Pending / Awaiting" ? statusCount("Pending") : filter === "Confirmed" ? statusCount("Accepted") : filter === "Rejected" ? statusCount("Rejected") : 0}</span>
+                <span>{countForFilter(filter)}</span>
               </button>
             ))}
           </div>
 
           <div className="bc-filter-tools">
-            <button className="bc-filter-search">⌕</button>
-            <select aria-label="Category">
-              <option>All Categories</option>
-              <option>Photography</option>
-              <option>Videography</option>
-              <option>Decoration</option>
+            <select aria-label="Category" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
+            <option>All Categories</option>
+            {categories.map((category) => <option key={category}>{category}</option>)}
             </select>
-            <select aria-label="Date range">
-              <option>Nov 1, 2026 - Nov 30, 2026</option>
-              <option>December 2026</option>
+            <select aria-label="Date range" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}>
+            <option>All Dates</option>
+            {dateOptions.map((date) => <option key={date} value={date}>{new Date(`${date}-01T00:00:00`).toLocaleDateString(undefined, { month: "long", year: "numeric" })}</option>)}
             </select>
-            <select aria-label="Budget">
-              <option>Any Budget (LKR)</option>
-              <option>Below 50,000</option>
-              <option>50,000 - 100,000</option>
-            </select>
-            <button className="bc-free-filter">✦ Conflict-Free Only</button>
           </div>
         </section>
 
@@ -340,12 +366,8 @@ function BookingRequests() {
             )}
 
             <div className="bc-table-footer">
-              Showing {filteredBookings.length} of {bookings.length} requests
-              <div>
-                <button>‹</button>
-                <span>Page 1 of 23</span>
-                <button>›</button>
-              </div>
+              Showing {loading || loadError ? "—" : filteredBookings.length} of {loading || loadError ? "—" : bookings.length} requests
+              <span>All matching booking records</span>
             </div>
           </div>
 
@@ -463,23 +485,31 @@ function BookingRequests() {
             <div className="bc-bottom-heading">
               <div>
                 <h3>Calendar Overview</h3>
-                <p>November 2026 Schedule & Commitment Heatmap</p>
+                <div className="bc-calendar-controls">
+                  <button type="button" onClick={() => changeCalendarMonth(-1)} aria-label="Previous month">‹</button>
+                  <p>{calendarTitle} booking records</p>
+                  <button type="button" onClick={() => changeCalendarMonth(1)} aria-label="Next month">›</button>
+                </div>
               </div>
-              <span>View Calendar ↗</span>
+              <button type="button" onClick={() => navigate("/AvailabilityCalendar")}>View Calendar ↗</button>
             </div>
 
             <div className="bc-legend">
               <span><i className="booked"></i> Booked Event</span>
               <span><i className="pending"></i> Pending Request</span>
-              <span><i className="available"></i> Available</span>
+              <span>No booking record means availability is unknown</span>
             </div>
 
             <div className="bc-heatmap">
-              {Array.from({ length: 28 }, (_, i) => {
+              {loading && <p role="status">Loading calendar records...</p>}
+              {loadError && <p role="alert">{loadError}</p>}
+              {Array.from({ length: calendarDays }, (_, i) => {
                 const day = i + 1;
                 const booking = bookings.find((item) => {
                   const date = new Date(item.eventDate);
-                  return date.getFullYear() === 2026 && date.getMonth() === 10 && date.getDate() === day;
+                  return date.getFullYear() === calendarMonth.getFullYear() &&
+                    date.getMonth() === calendarMonth.getMonth() &&
+                    date.getDate() === day;
                 });
                 const type = booking?.status === "Accepted"
                   ? "booked"
@@ -491,7 +521,7 @@ function BookingRequests() {
                   <button
                     key={day}
                     className={`bc-day ${type}`}
-                    title={`November ${day}`}
+                    title={`${calendarTitle} ${day}${booking ? ` · ${booking.status}` : " · No booking record"}`}
                   >
                     <small>{day}</small>
                     <span>{type === "booked" ? "●" : type === "pending" ? "◷" : "○"}</span>
@@ -516,7 +546,7 @@ function BookingRequests() {
         </section>
 
         <footer className="bc-footer">
-          © 2026 Event Connect. All rights reserved.
+          © {new Date().getFullYear()} Event Connect.
         </footer>
 
       </main>

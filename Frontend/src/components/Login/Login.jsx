@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { authApi } from "../../services/api";
+import BrandLogo from "../BrandLogo";
 import "./Login.css";
 
 const dashboardPaths = {
@@ -13,7 +14,7 @@ const dashboardPaths = {
 export default function Login() {
   const navigate = useNavigate();
   const { authError, loading, setSession } = useAuth();
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ identifier: "", password: "" });
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -28,17 +29,17 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (loading) return;
-    const username = form.username.trim();
+    const identifier = form.identifier.trim();
 
-    if (!username || !form.password.trim()) {
-      setMessage("Please enter your user name and password.");
+    if (!identifier || !form.password.trim()) {
+      setMessage("Please enter your email or user name and password.");
       return;
     }
 
     setSubmitting(true);
     setMessage("");
     try {
-      const session = await authApi.login({ username, password: form.password });
+      const session = await authApi.login({ email: identifier, password: form.password });
       const destination = dashboardPaths[session.user?.role];
       if (!destination) {
         throw new Error("The server returned an invalid account role.");
@@ -56,14 +57,15 @@ export default function Login() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
+        {/* <BrandLogo className="login-brand-logo" /> */}
         <h1>LOGIN</h1>
 
-        <label htmlFor="username">User Name</label>
+        <label htmlFor="identifier">Email or User Name</label>
         <input
-          id="username"
-          name="username"
+          id="identifier"
+          name="identifier"
           type="text"
-          value={form.username}
+          value={form.identifier}
           onChange={handleChange}
         />
 

@@ -6,33 +6,16 @@ import "./BrowseServices.css";
 import "./EventConnectBookings.css";
 import ClientSidebar from "./ClientSidebar";
 
-const categories = [
-  { name: "Photography", icon: "📸" },
-  { name: "Decor & Flowers", icon: "💐" },
-  { name: "Catering", icon: "🍽️" },
-  { name: "Cake & Sweets", icon: "🎂" },
-  { name: "Makeup Artist", icon: "💄" },
-  { name: "Surprise & Gifts", icon: "🎁" },
-  { name: "Dance & Music", icon: "🎭" },
-  { name: "Magicians", icon: "✨" },
-];
-
-const categoryAliases = {
-  Photography: ["photography"],
-  "Decor & Flowers": ["decorflowers", "decorations"],
-  Catering: ["catering"],
-  "Cake & Sweets": ["cakesweets", "cakeicing"],
-  "Makeup Artist": ["makeupartist", "makeupartists"],
-  "Surprise & Gifts": ["surprisegifts"],
-  "Dance & Music": ["dancemusic", "dancegroups"],
-  Magicians: ["magician", "magicians"],
+const categoryIcon = (category) => {
+  const value = category.toLowerCase();
+  if (value.includes("photo")) return "📸";
+  if (value.includes("decor") || value.includes("flower")) return "💐";
+  if (value.includes("cater")) return "🍽️";
+  if (value.includes("cake") || value.includes("sweet")) return "🎂";
+  if (value.includes("makeup")) return "💄";
+  if (value.includes("music") || value.includes("dance")) return "🎭";
+  return "✦";
 };
-
-const normalizeCategory = (category) => category.toLowerCase().replace(/[^a-z0-9]/g, "");
-const matchesCategory = (selectedCategory, serviceCategory) =>
-  selectedCategory === "All" ||
-  (categoryAliases[selectedCategory] || [normalizeCategory(selectedCategory)])
-    .includes(normalizeCategory(serviceCategory));
 
 export default function BrowseServices() {
   const navigate = useNavigate();
@@ -44,7 +27,6 @@ export default function BrowseServices() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("Recommended");
-  const [showDiscounts, setShowDiscounts] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [notice, setNotice] = useState("");
   const [selectedService, setSelectedService] = useState(null);
@@ -82,7 +64,7 @@ export default function BrowseServices() {
 
   const filteredServices = useMemo(() => {
     let result = services.filter((service) => {
-      const inCategory = matchesCategory(activeCategory, service.category);
+      const inCategory = activeCategory === "All" || activeCategory === service.category;
       const query = search.trim().toLowerCase();
       const matchesSearch =
         !query ||
@@ -90,15 +72,19 @@ export default function BrowseServices() {
         service.category.toLowerCase().includes(query) ||
         (service.description || "").toLowerCase().includes(query) ||
         (service.provider?.businessName || "").toLowerCase().includes(query);
-      const matchesDiscount = !showDiscounts || Boolean(service.tag);
-      return inCategory && matchesSearch && matchesDiscount;
+      return inCategory && matchesSearch;
     });
 
     if (sortBy === "Price: low to high") result = [...result].sort((a, b) => a.price - b.price);
     if (sortBy === "Price: high to low") result = [...result].sort((a, b) => b.price - a.price);
-    if (sortBy === "Top rated") result = [...result].sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
     return result;
-  }, [services, activeCategory, search, showDiscounts, sortBy]);
+  }, [services, activeCategory, search, sortBy]);
+  const categories = useMemo(
+    () => [...new Set(services.map((service) => service.category).filter(Boolean))]
+      .sort((left, right) => left.localeCompare(right))
+      .map((name) => ({ name, icon: categoryIcon(name) })),
+    [services]
+  );
 
   const toggleFavorite = (id) => {
     setFavorites((current) =>
@@ -141,7 +127,7 @@ export default function BrowseServices() {
   return (
     <div className="bs-app">
       <ClientSidebar
-        onHelp={() => handleAction("Concierge support request started.")}
+        onHelp={() => handleAction("Support requests are not available through the current backend.")}
         onLogout={() => {
           clearSession();
           navigate("/login", { replace: true });
@@ -161,11 +147,11 @@ export default function BrowseServices() {
             <kbd>⌘ K</kbd>
           </div>
           <div className="topbar-actions">
-            <button className="icon-button" aria-label="Notifications" onClick={() => handleAction("You're all caught up!")}>♧<i /></button>
+            <button className="icon-button" aria-label="Notifications" onClick={() => handleAction("Notifications are not configured in the backend.")}>♧<i /></button>
             <button className="icon-button" aria-label="Messages" onClick={() => navigate("/Messages")}>▤</button>
             <div className="profile-mini">
               <div className="avatar">{user?.username?.charAt(0).toUpperCase() || "A"}</div>
-              <div><strong>{user?.username || "Customer"} <span className="vip-pill">VIP</span></strong><small>Private Host</small></div>
+              <div><strong>{user?.username || "Customer"}</strong><small>Customer</small></div>
               <span className="chevron">⌄</span>
             </div>
           </div>
@@ -181,7 +167,6 @@ export default function BrowseServices() {
             <span className="online-count">
               {loading ? "Loading available services..." : loadError ? "Service directory unavailable" : `${services.length} active services`}
             </span>
-            <span className="verified-pill">✓ Vetted Standards</span>
           </div>
           <div className="discovery-search">
             <span className="search-symbol">⌕</span>
@@ -193,13 +178,15 @@ export default function BrowseServices() {
             <button onClick={() => document.querySelector(".services-grid")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Discover <span>→</span></button>
           </div>
           <div className="filter-row">
-            <button className="filter-chip" onClick={() => setActiveCategory("All")}>♧ Category: <b>{activeCategory}</b>⌄</button>
-            <button className="filter-chip" onClick={() => setSortBy(sortBy === "Top rated" ? "Recommended" : "Top rated")}>♧ <b>5★</b> <b>$$$$</b></button>
-            <button className="filter-chip" onClick={() => setSortBy(sortBy === "Price: low to high" ? "Recommended" : "Price: low to high")}>✧ Min Rating: <b>4.8+</b>⌄</button>
-            <button className="filter-chip" onClick={() => handleAction("Choose your event date when booking a service.")}>▦ Date: <b>Any Upcoming</b>⌄</button>
-            <button className={`filter-chip discount-filter ${showDiscounts ? "selected" : ""}`} onClick={() => setShowDiscounts(!showDiscounts)}>
-              <span className="empty-checkbox">{showDiscounts ? "✓" : ""}</span> Promotions &amp; Offers <b className="discount-label">{showDiscounts ? "ON" : "15% OFF"}</b>
-            </button>
+            <select className="filter-chip" value={activeCategory} onChange={(event) => setActiveCategory(event.target.value)} aria-label="Filter by service category">
+              <option value="All">All Categories</option>
+              {categories.map((category) => <option key={category.name} value={category.name}>{category.name}</option>)}
+            </select>
+            <select className="filter-chip" value={sortBy} onChange={(event) => setSortBy(event.target.value)} aria-label="Sort services">
+              <option>Recommended</option>
+              <option>Price: low to high</option>
+              <option>Price: high to low</option>
+            </select>
           </div>
           <div className="filter-footnote"><span>Reset</span><span>Sorted by: <b>{sortBy}</b></span></div>
         </section>
@@ -218,7 +205,7 @@ export default function BrowseServices() {
               >
                 <span className="category-icon">{category.icon}</span>
                 <strong>{category.name}</strong>
-                <small>{services.filter((service) => matchesCategory(category.name, service.category)).length} Artisans</small>
+                <small>{services.filter((service) => service.category === category.name).length} Services</small>
               </button>
             ))}
           </div>
@@ -255,7 +242,6 @@ export default function BrowseServices() {
                 <article className="service-card" key={service._id}>
                   <div className="service-image-wrap">
                     <img src={service.image || undefined} alt={service.title} className="service-image" />
-                    {service.tag && <span className={`service-tag tag-${service._id}`}>{service.tag}</span>}
                     <button
                       className={`favorite-button ${favorites.includes(service._id) ? "is-favorite" : ""}`}
                       aria-label={favorites.includes(service._id) ? "Remove from favorites" : "Add to favorites"}
@@ -266,16 +252,15 @@ export default function BrowseServices() {
                   <div className="service-info">
                     <div className="service-title-row">
                       <h3>{service.title}</h3>
-                      <span className="rating">{service.rating ? `★ ${service.rating}` : "Not yet rated"}</span>
+                      <span className="rating">Rating not available</span>
                     </div>
                     {service.provider?.businessName && <p className="service-description">By {service.provider.businessName}</p>}
                     <p className="service-description">{service.description || "No description provided."}</p>
                     <div className="service-price-row">
-                      <div><small>{service.priceUnit || "Starting Rate"}</small><strong>LKR {Number(service.price).toLocaleString()}</strong></div>
-                      <div className="availability"><span />Available</div>
+                      <div><small>{service.priceUnit || "Unit not specified"}</small><strong>{service.price === undefined ? "Price not available" : `LKR ${Number(service.price).toLocaleString()}`}</strong></div>
+                      <div className="availability">Availability not configured</div>
                     </div>
                     <div className="service-actions">
-                      <button className="outline-button" onClick={() => handleAction(`${service.title}: details panel can be connected here.`)}>View Details</button>
                       <button className="primary-button" onClick={() => openBookingForm(service)}>Book Now</button>
                     </div>
                   </div>
@@ -287,7 +272,7 @@ export default function BrowseServices() {
               <span>⌕</span>
               <h3>{services.length ? "No services match your filters" : "No active services are available"}</h3>
               <p>{services.length ? "Try changing your search or filters to find available services." : "Check back soon as providers add services to the directory."}</p>
-              <button className="primary-button" onClick={() => { setSearch(""); setActiveCategory("All"); setShowDiscounts(false); }}>Clear filters</button>
+              <button className="primary-button" onClick={() => { setSearch(""); setActiveCategory("All"); setSortBy("Recommended"); }}>Clear filters</button>
             </div>
           )}
           <div className="pagination">

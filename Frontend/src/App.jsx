@@ -4,7 +4,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./components/home";
 import Login from "./components/Login/Login";
-import AdminLogin from "./components/Login/AdminLogin";
 import Register from "./Register/Register";
 
 import Customerhome from "./components/ClientDashboard/CustomerHome";
@@ -14,6 +13,7 @@ import ProfileSettings from "./components/ClientDashboard/Profilesettings";
 import EventConnectMessages from "./components/ClientDashboard/EventConnectMessages";
 import { MyReviews, PaymentsBudget } from "./components/ClientDashboard/ClientDashboardPages";
 import Payment from "./components/Payment/Payment";
+import ClientBookingPayment from "./components/Payment/ClientBookingPayment";
 import OverviewDashboard from "./components/AdminDashboard/Overviewdashboard";
 import UserManagement from "./components/AdminDashboard/UserManagement";
 import ProviderManagement from "./components/AdminDashboard/ProviderMangament";
@@ -22,7 +22,6 @@ import BookingManagement from "./components/AdminDashboard/BookingManagement";
 import PaymentsCommission from "./components/AdminDashboard/Paymentcommission";
 import SubscriptionManagement from "./components/AdminDashboard/Subscrptionmanagement";
 import PlatformSettings from "./components/AdminDashboard/Platformsettings";
-import ProviderDashboard from "./components/ProviderDashboard/ProviderDashboard";
 import ProviderHome from "./components/ServiceProviderDashboard/ProviderHome";
 import BookingRequests from "./components/ServiceProviderDashboard/BookingRequests";
 import AvailabilityCalendar from "./components/ServiceProviderDashboard/AvailabilityCalendar";
@@ -33,10 +32,17 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/payment" element={<Payment />} />
-
+      <Route path="/payment" element={<ProtectedRoute role="provider"><Payment /></ProtectedRoute>} />
+    <Route
+  path="/client-payment"
+  element={
+    <ProtectedRoute role="customer">
+      <ClientBookingPayment />
+    </ProtectedRoute>
+  }
+/>
       {/* Customer Dashboard */}
       <Route path="/CustomerHome" element={<ProtectedRoute role="customer"><Customerhome /></ProtectedRoute>} />
       <Route path="/BrowseServices" element={<ProtectedRoute role="customer"><BrowseServices /></ProtectedRoute>} />
@@ -47,7 +53,7 @@ function App() {
       <Route path="/MyReviews" element={<ProtectedRoute role="customer"><MyReviews /></ProtectedRoute>} />
 
       {/* Provider and admin dashboards */}
-      <Route path="/ProviderDashboard" element={<ProtectedRoute role="provider"><ProviderDashboard /></ProtectedRoute>} />
+      <Route path="/ProviderDashboard" element={<ProtectedRoute role="provider"><ProviderHome /></ProtectedRoute>} />
       <Route path="/ProviderHome" element={<ProtectedRoute role="provider"><ProviderHome /></ProtectedRoute>} />
       <Route path="/MyServices" element={<ProtectedRoute role="provider"><MyServices /></ProtectedRoute>} />
       <Route path="/BookingRequests" element={<ProtectedRoute role="provider"><BookingRequests /></ProtectedRoute>} />

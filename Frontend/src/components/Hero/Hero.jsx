@@ -61,11 +61,11 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="hero__rating">
+        {/* <div className="hero__rating">
           <Star size={13} fill="var(--gold)" color="var(--gold)" />
           <strong>4.9/5</strong>
           <small>Over 1,200+ Reviews</small>
-        </div>
+        </div> */}
       </div>
     </section>
   );

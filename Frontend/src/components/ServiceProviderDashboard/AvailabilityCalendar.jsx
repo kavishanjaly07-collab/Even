@@ -1,5 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { bookingApi } from "../../services/api";
+import BrandLogo from "../BrandLogo";
 import "./AvailabilityCalendar.css";
 
 const menuItems = [
@@ -11,36 +15,8 @@ const menuItems = [
   ["✉", "Messages"],
   ["☆", "Reviews & Ratings"],
   ["♙", "Subscription & Membership"],
-  ["♧", "Notifications"],
   ["♙", "My Profile"],
-  ["?", "Help & Support"],
   ["↪", "Logout"],
-];
-
-const initialEvents = [
-  { day: 3, title: "Wedding", time: "10:00 AM", type: "booked" },
-  { day: 4, title: "Photography", time: "09:00 AM", type: "booked" },
-  { day: 5, title: "Corporate Event", time: "02:00 PM", type: "booked" },
-  { day: 6, title: "Birthday", time: "06:00 PM", type: "booked" },
-  { day: 7, title: "Wedding", time: "11:00 AM", type: "pending" },
-  { day: 8, title: "Photo Session", time: "09:00 AM", type: "booked" },
-  { day: 10, title: "Engagement", time: "04:00 PM", type: "booked" },
-  { day: 11, title: "Corporate Shoot", time: "10:00 AM", type: "booked" },
-  { day: 12, title: "Wedding Event", time: "08:00 AM", type: "booked" },
-  { day: 13, title: "Private Event", time: "06:00 PM", type: "pending" },
-  { day: 14, title: "Concert", time: "07:00 PM", type: "booked" },
-  { day: 15, title: "Wedding", time: "10:00 AM", type: "booked" },
-  { day: 16, title: "Photography", time: "09:00 AM", type: "booked" },
-  { day: 18, title: "Birthday Party", time: "05:00 PM", type: "pending" },
-  { day: 19, title: "Corporate", time: "11:00 AM", type: "booked" },
-  { day: 20, title: "Engagement", time: "04:00 PM", type: "booked" },
-  { day: 21, title: "Wedding", time: "10:00 AM", type: "booked" },
-  { day: 22, title: "Event Shoot", time: "09:00 AM", type: "booked" },
-  { day: 24, title: "Product Launch", time: "02:00 PM", type: "pending" },
-  { day: 25, title: "Photography", time: "10:00 AM", type: "booked" },
-  { day: 27, title: "Private Event", time: "06:00 PM", type: "booked" },
-  { day: 28, title: "Wedding", time: "08:00 AM", type: "booked" },
-  { day: 29, title: "Photo Session", time: "09:00 AM", type: "booked" },
 ];
 
 const months = [
@@ -50,20 +26,25 @@ const months = [
 ];
 
 function AvailabilityCalendar() {
+  const navigate = useNavigate();
+  const { user, clearSession } = useAuth();
+  const today = new Date();
   const [activeMenu, setActiveMenu] = useState("Availability Calendar");
-  const [month, setMonth] = useState(10);
-  const [year, setYear] = useState(2026);
-  const [selectedDay, setSelectedDay] = useState(15);
-  const [events, setEvents] = useState(initialEvents);
-  const [calendarFilter, setCalendarFilter] = useState("All Services");
+  const [month, setMonth] = useState(today.getMonth());
+  const [year, setYear] = useState(today.getFullYear());
+  const [selectedDay, setSelectedDay] = useState(today.getDate());
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [calendarFilter, setCalendarFilter] = useState("All Statuses");
   const [view, setView] = useState("Month");
   const [showAvailability, setShowAvailability] = useState(false);
   const [showBlockForm, setShowBlockForm] = useState(false);
   const [notification, setNotification] = useState("");
 
   const [availability, setAvailability] = useState({
-    startDate: "2026-11-18",
-    endDate: "2026-11-20",
+    startDate: "",
+    endDate: "",
     startTime: "09:00",
     endTime: "17:00",
     repeat: "Does not repeat",
@@ -75,6 +56,45 @@ function AvailabilityCalendar() {
     reason: "Personal / Private Event",
     notes: "",
   });
+
+  useEffect(() => {
+    let active = true;
+    bookingApi.getProviderRequests()
+      .then(({ bookings }) => {
+        if (!Array.isArray(bookings)) {
+          throw new Error("The booking records response was invalid.");
+        }
+        const calendarEvents = bookings.flatMap((booking) => {
+          const date = new Date(booking.eventDate);
+          if (Number.isNaN(date.getTime())) return [];
+          return [{
+            id: booking._id,
+            day: date.getDate(),
+            month: date.getMonth(),
+            year: date.getFullYear(),
+            date,
+            title: booking.service?.title || "Service no longer available",
+            time: date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            type: booking.status === "Accepted" ? "booked" : booking.status === "Pending" ? "pending" : "rejected",
+            status: booking.status || "Not available",
+            location: booking.location || "Not available",
+            customer: booking.customer?.username || "Customer",
+            category: booking.service?.category || "Not available",
+          }];
+        });
+        if (active) setEvents(calendarEvents);
+      })
+      .catch((error) => {
+        if (active) setLoadError(error.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
@@ -100,7 +120,7 @@ function AvailabilityCalendar() {
   };
 
   const selectedEvents = events.filter(
-    (event) => event.day === selectedDay
+    (event) => event.day === selectedDay && event.month === month && event.year === year
   );
 
   const addAvailability = (e) => {
@@ -111,8 +131,7 @@ function AvailabilityCalendar() {
       return;
     }
 
-    setNotification("Custom availability window added successfully.");
-    setShowAvailability(false);
+    setNotification("Availability settings cannot be saved because the backend does not support them.");
   };
 
   const addBlackout = (e) => {
@@ -123,48 +142,23 @@ function AvailabilityCalendar() {
       return;
     }
 
-    const date = new Date(blackout.startDate);
-    const blackoutMonth = date.getMonth();
-    const blackoutYear = date.getFullYear();
-
-    if (blackoutMonth === month && blackoutYear === year) {
-      const start = date.getDate();
-      const end = new Date(blackout.endDate).getMonth() === month
-        ? new Date(blackout.endDate).getDate()
-        : daysInMonth;
-
-      const newEvents = [];
-
-      for (let day = start; day <= end; day++) {
-        newEvents.push({
-          day,
-          title: "Unavailable",
-          time: "All day",
-          type: "blocked",
-        });
-      }
-
-      setEvents((previous) => [
-        ...previous.filter(
-          (event) => !newEvents.some((item) => item.day === event.day)
-        ),
-        ...newEvents,
-      ]);
-    }
-
-    setNotification("Blackout dates added successfully.");
-    setShowBlockForm(false);
+    setNotification("Blackout dates cannot be saved because the backend does not support them.");
   };
 
   const getDayEvents = (day) =>
-    events.filter((event) => event.day === day);
+    events.filter((event) => event.day === day && event.month === month && event.year === year);
 
   const visibleEvents = selectedEvents.filter((event) => {
-    if (calendarFilter === "All Services") return true;
-    if (calendarFilter === "Booked") return event.type === "booked";
-    if (calendarFilter === "Pending") return event.type === "pending";
-    return true;
+    if (calendarFilter === "All Statuses") return true;
+    if (calendarFilter === "Accepted") return event.status === "Accepted";
+    if (calendarFilter === "Pending") return event.status === "Pending";
+    return event.status === "Rejected";
   });
+  const timelineEvents = events.filter((event) =>
+    event.year === year &&
+    event.month === month &&
+    Math.abs(event.day - selectedDay) <= 3
+  );
 
   return (
     <div className="ac-dashboard">
@@ -172,7 +166,7 @@ function AvailabilityCalendar() {
       {/* SIDEBAR */}
       <aside className="ac-sidebar">
         <div className="ac-logo">
-          <span className="ac-logo-icon">✦</span>
+          <BrandLogo className="ac-logo-icon" />
           <span>Event Connect</span>
         </div>
 
@@ -187,34 +181,39 @@ function AvailabilityCalendar() {
               className={`ac-nav-item ${
                 activeMenu === label ? "active" : ""
               } ${label === "Logout" ? "ac-logout" : ""}`}
-              onClick={() => setActiveMenu(label)}
+              onClick={() => {
+                if (label === "Logout") {
+                  clearSession();
+                  navigate("/login", { replace: true });
+                  return;
+                }
+                setActiveMenu(label);
+                if (label === "Overview") navigate("/ProviderHome");
+                else if (label === "My Services") navigate("/MyServices");
+                else if (label === "Booking Requests") navigate("/BookingRequests");
+                else if (label !== "Availability Calendar") {
+                  navigate("/ProviderHome", {
+                    state: { providerPage: label },
+                  });
+                }
+              }}
             >
               <span className="ac-nav-icon">{icon}</span>
               <span>{label}</span>
 
               {label === "Booking Requests" && (
-                <span className="ac-nav-dot">8</span>
+                <span className="ac-nav-dot">{events.filter((event) => event.status === "Pending").length}</span>
               )}
 
-              {label === "Messages" && (
-                <span className="ac-nav-dot">3</span>
-              )}
-
-              {label === "Subscription & Membership" && (
-                <span className="ac-pro">PRO</span>
-              )}
             </button>
           ))}
         </nav>
 
         <div className="ac-concierge">
           <strong>✦ Artisan Concierge</strong>
-          <p>
-            Need assistance managing your availability?
-            We're here to help.
-          </p>
-          <button onClick={() => setNotification("Support contact selected.")}>
-            ♡ Contact Us
+          <p>Provider support details are not configured in the backend.</p>
+          <button onClick={() => setNotification("Support contact information is not configured.")}>
+            Support details
           </button>
         </div>
       </aside>
@@ -235,14 +234,14 @@ function AvailabilityCalendar() {
               placeholder="⌕  Search bookings, services, clients..."
               className="ac-search"
             />
-            <button className="ac-header-icon">♧</button>
+            <button className="ac-header-icon" aria-label="Notifications">♧</button>
             <button className="ac-header-icon">♢</button>
 
             <div className="ac-profile">
-              <span className="ac-profile-avatar">L</span>
+              <span className="ac-profile-avatar">{user?.username?.charAt(0).toUpperCase() || "P"}</span>
               <div>
-                <strong>Lumina Events</strong>
-                <small>Creative Manager</small>
+                <strong>{user?.username || "Service Provider"}</strong>
+                <small>Service Provider</small>
               </div>
               <span>⌄</span>
             </div>
@@ -257,12 +256,9 @@ function AvailabilityCalendar() {
             </div>
             <div className="ac-title-row">
               <h1>Availability Calendar</h1>
-              <span className="ac-live-badge">LIVE SYNC</span>
+              <span className="ac-live-badge">BOOKING RECORDS</span>
             </div>
-            <p>
-              Manage your schedule, block dates, and prevent double bookings
-              with real-time availability management.
-            </p>
+            <p>View booking records associated with your provider account. Availability settings are not supported by the current backend.</p>
           </div>
 
           <div className="ac-heading-actions">
@@ -280,13 +276,13 @@ function AvailabilityCalendar() {
               ▣ Block Dates
             </button>
 
-            <button className="ac-purple-button">
-              ✓ Sync Calendar
+            <button className="ac-purple-button" onClick={() => setNotification("Calendar synchronization is not configured.")}>
+              Sync Calendar
             </button>
 
             <button
               className="ac-purple-button"
-              onClick={() => setNotification("Working hours settings opened.")}
+              onClick={() => setNotification("Working hours are not configured in the backend.")}
             >
               ◷ Working Hours & Rules
             </button>
@@ -300,10 +296,10 @@ function AvailabilityCalendar() {
               <span>BOOKED SLOTS</span>
               <span className="ac-stat-icon green">▣</span>
             </div>
-            <h2>18</h2>
+            <h2>{loading || loadError ? "—" : events.length}</h2>
             <div className="ac-stat-bottom">
-              <span className="ac-stat-label green">↑ 12.5%</span>
-              <span>vs previous month</span>
+              <span className="ac-stat-label green">Stored</span>
+              <span>Booking records</span>
             </div>
           </div>
 
@@ -312,7 +308,7 @@ function AvailabilityCalendar() {
               <span>CONFIRMED EVENTS</span>
               <span className="ac-stat-icon purple">✦</span>
             </div>
-            <h2>8</h2>
+            <h2>{loading || loadError ? "—" : events.filter((event) => event.status === "Accepted").length}</h2>
             <div className="ac-stat-bottom">
               <span className="ac-stat-label purple">Booked</span>
               <span>Confirmed bookings</span>
@@ -324,7 +320,7 @@ function AvailabilityCalendar() {
               <span>PENDING REQUESTS</span>
               <span className="ac-stat-icon yellow">◷</span>
             </div>
-            <h2>4</h2>
+            <h2>{loading || loadError ? "—" : events.filter((event) => event.status === "Pending").length}</h2>
             <div className="ac-stat-bottom">
               <span className="ac-stat-label yellow">Action Needed</span>
               <span>Awaiting response</span>
@@ -336,10 +332,10 @@ function AvailabilityCalendar() {
               <span>BLOCKED DATES</span>
               <span className="ac-stat-icon pink">⊘</span>
             </div>
-            <h2>5</h2>
+            <h2>Not available</h2>
             <div className="ac-stat-bottom">
-              <span className="ac-stat-label pink">Management</span>
-              <span>Personal availability</span>
+              <span className="ac-stat-label pink">Not configured</span>
+                <span>No availability records</span>
             </div>
           </div>
         </section>
@@ -348,15 +344,13 @@ function AvailabilityCalendar() {
         <div className="ac-alert">
           <div className="ac-alert-icon">✓</div>
           <div className="ac-alert-content">
-            <strong>Double-Booking Prevention Engine Active</strong>
-            <span className="ac-active-pill">● PROTECTED</span>
+            <strong>Booking Records</strong>
             <p>
-              Your calendar is automatically checked against booking requests
-              to avoid schedule conflicts.
+              This calendar displays stored provider booking requests. Availability blocking is not configured.
             </p>
           </div>
-          <button onClick={() => setNotification("Double booking settings opened.")}>
-            Rule Settings
+          <button onClick={() => setNotification("Availability rules are not configured in the backend.")}>
+            Availability Rules
           </button>
           <span className="ac-alert-more">⚙</span>
         </div>
@@ -373,9 +367,10 @@ function AvailabilityCalendar() {
             <button
               className="ac-today-button"
               onClick={() => {
-                setMonth(9);
-                setYear(2026);
-                setSelectedDay(30);
+                const currentDate = new Date();
+                setMonth(currentDate.getMonth());
+                setYear(currentDate.getFullYear());
+                setSelectedDay(currentDate.getDate());
               }}
             >
               Today
@@ -396,9 +391,10 @@ function AvailabilityCalendar() {
               onChange={(e) => setCalendarFilter(e.target.value)}
               aria-label="Calendar filter"
             >
-              <option>All Services</option>
-              <option>Booked</option>
+              <option>All Statuses</option>
+              <option>Accepted</option>
               <option>Pending</option>
+              <option>Rejected</option>
             </select>
           </div>
 
@@ -415,23 +411,15 @@ function AvailabilityCalendar() {
               ))}
             </div>
 
-            <select aria-label="Service category">
-              <option>All Service Types</option>
-              <option>Photography</option>
-              <option>Videography</option>
-              <option>Decoration</option>
-            </select>
-            <button className="ac-download">⇩</button>
+            <span className="ac-data-source">Records from your provider bookings</span>
           </div>
         </section>
 
         {/* CALENDAR LEGEND */}
         <div className="ac-legend">
-          <span><i className="dot-available"></i> Available</span>
           <span><i className="dot-booked"></i> Confirmed Event</span>
           <span><i className="dot-pending"></i> Pending Request</span>
-          <span><i className="dot-blocked"></i> Blocked / Unavailable</span>
-          <span><i className="dot-custom"></i> Custom Availability</span>
+          <span>No booking record means availability is unknown</span>
         </div>
 
         {/* CALENDAR + RIGHT PANEL */}
@@ -453,9 +441,8 @@ function AvailabilityCalendar() {
                     const validDay = day > 0 && day <= daysInMonth;
                     const dayEvents = validDay ? getDayEvents(day) : [];
                     const filteredDayEvents = dayEvents.filter((event) => {
-                      if (calendarFilter === "All Services") return true;
-                      if (calendarFilter === "Booked") return event.type === "booked";
-                      return event.type === "pending";
+                      if (calendarFilter === "All Statuses") return true;
+                      return event.status === calendarFilter;
                     });
 
                     return (
@@ -487,11 +474,7 @@ function AvailabilityCalendar() {
                               </span>
                             )}
 
-                            {dayEvents.length === 0 && (
-                              <span className="ac-available-label">
-                                Available
-                              </span>
-                            )}
+                            {dayEvents.length === 0 && <span className="ac-available-label">No bookings</span>}
                           </>
                         )}
                       </button>
@@ -513,9 +496,9 @@ function AvailabilityCalendar() {
             )}
 
             <div className="ac-calendar-footer">
-              <span>◉ {events.filter(e => e.type === "booked").length} Booked</span>
-              <span>◷ {events.filter(e => e.type === "pending").length} Pending</span>
-              <span>⊘ {events.filter(e => e.type === "blocked").length} Blocked</span>
+              <span>◉ {events.filter((event) => event.status === "Accepted").length} Accepted</span>
+                  <span>◷ {events.filter((event) => event.status === "Pending").length} Pending</span>
+                  <span>⊘ Not available: blocked dates</span>
             </div>
           </div>
 
@@ -533,63 +516,32 @@ function AvailabilityCalendar() {
                   <small>Selected Schedule</small>
                 </div>
                 <span className="ac-date-badge">
-                  {selectedEvents.length ? "Scheduled" : "Available"}
+                  {loading ? "Loading" : loadError ? "Unavailable" : selectedEvents.length ? "Scheduled" : "No bookings"}
                 </span>
               </div>
 
               <div className="ac-request-info">
-                <div className="ac-request-heading">
-                  <small>BOOKING REQUEST</small>
-                  <span>NEW REQUEST</span>
-                </div>
-
-                <h2>#BEC-8420</h2>
-
-                <div className="ac-request-client">
-                  <span className="ac-client-avatar">SJ</span>
-                  <div>
-                    <strong>Sarah Johnson</strong>
-                    <small>Wedding Photography</small>
-                  </div>
-                </div>
-
-                <div className="ac-request-times">
-                  <div>
-                    <small>START TIME</small>
-                    <strong>10:00 AM</strong>
-                    <small>11/15/2026</small>
-                  </div>
-                  <div>
-                    <small>END TIME</small>
-                    <strong>08:00 PM</strong>
-                    <small>11/15/2026</small>
-                  </div>
-                </div>
-
-                <div className="ac-request-bottom">
-                  <span>◉ Calendar conflict check</span>
-                  <strong>✓ No Conflict</strong>
-                </div>
-
-                <div className="ac-request-actions">
-                  <button onClick={() => setNotification("Booking details opened.")}>
-                    View Details
-                  </button>
-                  <button onClick={() => setNotification("Message window opened.")}>
-                    ✉ Message
-                  </button>
-                </div>
-              </div>
-
-              <div className="ac-toggle-row">
-                <div>
-                  <strong>Accept additional bookings?</strong>
-                  <small>Allow clients to request this date</small>
-                </div>
-                <label className="ac-switch">
-                  <input type="checkbox" defaultChecked />
-                  <span></span>
-                </label>
+                {loading && <p role="status">Loading provider bookings...</p>}
+                {loadError && <p role="alert">{loadError}</p>}
+                {!loading && !loadError && visibleEvents.map((event) => (
+                  <article className="ac-event-details" key={event.id}>
+                    <div className="ac-request-heading">
+                      <small>BOOKING REQUEST</small>
+                      <span>{event.status}</span>
+                    </div>
+                    <h2>#{event.id.slice(-8).toUpperCase()}</h2>
+                    <div className="ac-request-client">
+                      <span className="ac-client-avatar">{event.customer.slice(0, 1).toUpperCase()}</span>
+                      <div><strong>{event.customer}</strong><small>{event.title} · {event.category}</small></div>
+                    </div>
+                    <div className="ac-request-times">
+                      <div><small>EVENT TIME</small><strong>{event.time}</strong><small>{event.date.toLocaleDateString()}</small></div>
+                      <div><small>LOCATION</small><strong>{event.location}</strong></div>
+                    </div>
+                    <button type="button" onClick={() => navigate("/BookingRequests")}>Manage booking</button>
+                  </article>
+                ))}
+                {!loading && !loadError && visibleEvents.length === 0 && <p>No booking records for this date.</p>}
               </div>
 
               <button
@@ -603,51 +555,32 @@ function AvailabilityCalendar() {
             {/* WEEK TIMELINE */}
             <div className="ac-side-card">
               <div className="ac-side-heading">
-                <h3>This Week's Timeline</h3>
-                <small>Nov 14 - Nov 20</small>
+                <h3>Booking Timeline</h3>
+                <small>{months[month]} {year}</small>
               </div>
 
-              {[
-                ["♙", "Corporate Photography", "09:00 - 11:00 AM", "Confirmed", "purple"],
-                ["▣", "Wedding Ceremony", "10:00 - 05:00 PM", "Booked", "green"],
-                ["◷", "Private Event", "06:00 - 10:00 PM", "Pending", "yellow"],
-              ].map((item) => (
-                <div className="ac-timeline-item" key={item[1]}>
-                  <span className={`ac-timeline-icon ${item[4]}`}>
-                    {item[0]}
-                  </span>
+              {timelineEvents.map((event) => (
+                <div className="ac-timeline-item" key={event.id}>
+                  <span className={`ac-timeline-icon ${event.type === "pending" ? "yellow" : event.type === "booked" ? "green" : "purple"}`}>▣</span>
                   <div>
-                    <strong>{item[1]}</strong>
-                    <small>{item[2]}</small>
+                    <strong>{event.title}</strong>
+                    <small>{event.date.toLocaleString()}</small>
                   </div>
-                  <span className={`ac-timeline-status ${item[4]}`}>
-                    {item[3]}
-                  </span>
+                  <span className={`ac-timeline-status ${event.type === "pending" ? "yellow" : event.type === "booked" ? "green" : "purple"}`}>{event.status}</span>
                 </div>
               ))}
+              {loading && <p role="status">Loading bookings...</p>}
+              {loadError && <p role="alert">{loadError}</p>}
+              {!loading && !loadError && !timelineEvents.length && <p>No booking records found in this period.</p>}
             </div>
 
             {/* WORKING HOURS */}
             <div className="ac-side-card ac-working-card">
               <div className="ac-side-heading">
-                <h3>◎ Standard Working Hours</h3>
-                <button onClick={() => setNotification("Working hours editor opened.")}>
-                  Edit
-                </button>
+                <h3>Working Hours</h3>
               </div>
 
-              {[
-                ["Mon - Fri", "09:00 - 18:00"],
-                ["Saturday", "09:00 - 15:00"],
-                ["Sunday", "Unavailable"],
-              ].map(([day, time]) => (
-                <div className="ac-working-row" key={day}>
-                  <span>{day}</span>
-                  <strong>{time}</strong>
-                </div>
-              ))}
-
-              <p>Timezone: Asia/Colombo (GMT +5:30)</p>
+              <p>Not available: working hours and timezone are not stored in the provider profile.</p>
             </div>
           </aside>
         </section>
@@ -735,9 +668,7 @@ function AvailabilityCalendar() {
               </select>
             </label>
 
-            <div className="ac-form-note">
-              ✓ This availability will be displayed to clients when requesting bookings.
-            </div>
+            <div className="ac-form-note">Availability settings cannot be saved because the backend does not support them.</div>
 
             <div className="ac-form-actions">
               <button
@@ -830,8 +761,7 @@ function AvailabilityCalendar() {
             </label>
 
             <div className="ac-warning-note">
-              ⚠ Blocked dates will not be available for new booking requests.
-              Existing confirmed bookings are not automatically cancelled.
+              Blocked dates cannot be saved because the backend does not support them.
             </div>
 
             <div className="ac-form-actions">
@@ -863,7 +793,7 @@ function AvailabilityCalendar() {
         )}
 
         <footer className="ac-footer">
-          © 2026 Event Connect. All rights reserved.
+          © {new Date().getFullYear()} Event Connect.
         </footer>
 
       </main>

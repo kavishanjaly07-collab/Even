@@ -27,8 +27,7 @@ function PageShell({ title, description, children }) {
           </label>
           <div className="client-extra-user">
             <span className="client-extra-avatar">{user?.username?.charAt(0).toUpperCase() || "C"}</span>
-            <span><strong>{user?.username || "Customer"}</strong><small>Private Host</small></span>
-            <b>VIP</b>
+            <span><strong>{user?.username || "Customer"}</strong><small>Customer</small></span>
           </div>
         </header>
         <section className="client-extra-content">
@@ -59,9 +58,7 @@ export function PaymentsBudget() {
         <div className="client-extra-card-heading"><div><h2>Budget breakdown</h2><p>Vendor payment details are not available without a payment or transaction API.</p></div><Link to="/MyBookings">View bookings</Link></div>
         <div className="client-extra-table">
           <div className="client-extra-table-row client-extra-table-head"><span>VENDOR / SERVICE</span><span>CATEGORY</span><span>AMOUNT</span><span>PAYMENT STATUS</span></div>
-          <div className="client-extra-table-row">
-            <strong>Not available</strong><span>Not available</span><b>Not available</b><span className="client-extra-status">Not available</span>
-          </div>
+          <div className="client-extra-table-row"><span>No payment records are available.</span></div>
         </div>
       </section>
     </PageShell>
@@ -72,12 +69,12 @@ export function MyReviews() {
   return (
     <PageShell
       title="My Reviews"
-      description="Your feedback for the event professionals who helped create your celebrations."
+      description="Review records are not available through the current backend."
     >
       <section className="client-extra-card">
         <div className="client-extra-card-heading"><div><h2>Reviews you have shared</h2><p>Feedback from your completed bookings.</p></div></div>
         <div className="client-extra-reviews">
-          <p>You haven't written any reviews yet.</p>
+          <p>No review records are available to display.</p>
         </div>
       </section>
     </PageShell>

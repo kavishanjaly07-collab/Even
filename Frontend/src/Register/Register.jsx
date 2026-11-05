@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { authApi, providerProfileApi } from "../services/api";
+import BrandLogo from "../components/BrandLogo";
 
 // 👉 Put your background photo in the "public" folder as register-bg.jpg
 const BACKGROUND_IMAGE = "/bgimg.jpg"; // relative to public folder
@@ -14,7 +15,7 @@ const styles = `
     align-items: center;
     justify-content: center;
     padding: 20px;
-    font-family: Inter, Arial, sans-serif;
+    font-family: var(--font-family);
     /* gradient shows if the image is missing */
     background-color: #5a2d6e;
     background-image: url("/src/assets/bgimg.jpg");
@@ -36,8 +37,8 @@ const styles = `
     width: 100%;
     max-width: 380px;
     background: #e1e1e1;
-    border-radius: 40px;
-    padding: 50px 36px 60px;
+    border-radius: 28px;
+    padding: 40px 32px;
   }
 
   .register-card h1 {
@@ -46,6 +47,15 @@ const styles = `
     font-size: 30px;
     margin-bottom: 30px;
     letter-spacing: 1px;
+  }
+
+  .register-brand-logo {
+    display: block;
+    width: min(100%, 210px);
+    height: auto;
+    aspect-ratio: 1408 / 768;
+    margin: 0 auto 18px;
+    object-fit: contain;
   }
 
   .register-card label {
@@ -57,12 +67,14 @@ const styles = `
 
   .register-card input {
     width: 100%;
-    height: 22px;
-    padding: 0 8px;
-    margin-bottom: 36px;
+    min-height: 44px;
+    padding: 10px 12px;
+    margin-bottom: 20px;
     border: none;
+    border-radius: 8px;
     background: #d4d4d4;
-    font-size: 14px;
+    font-family: inherit;
+    font-size: 15px;
     outline: none;
   }
 
@@ -71,10 +83,13 @@ const styles = `
   }
 
   .register-btn {
-    display: block;
+    display: inline-flex;
     margin: 0 auto;
     width: 200px;
-    padding: 8px 0;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
     border: none;
     border-radius: 999px;
     background: #4a0e63;
@@ -97,7 +112,8 @@ const styles = `
     .role-selection {
   display: flex;
   align-items: center;
-  gap: 25px;
+    flex-wrap: wrap;
+    gap: 12px 25px;
   margin: 15px 0;
 }
 
@@ -114,6 +130,17 @@ const styles = `
   height: 18px;
   accent-color: #650b7c;
   cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .register-page {
+    padding: 16px;
+  }
+
+  .register-card {
+    max-width: 420px;
+    padding: 32px 24px;
+  }
 }
 `;
 
@@ -153,8 +180,9 @@ export default function Register() {
         role: form.role,
       });
       setSession(session);
+      const registeredRole = session.user?.role;
       let profileSetupMessage = "";
-      if (form.role === "provider" && form.serviceType.trim()) {
+      if (registeredRole === "provider" && form.serviceType.trim()) {
         try {
           await providerProfileApi.create({
             businessName: form.username.trim(),
@@ -166,18 +194,16 @@ export default function Register() {
           profileSetupMessage = `Account created, but provider profile setup failed: ${profileError.message}`;
         }
       }
-      setMessage(profileSetupMessage || "Registration successful!");
-      navigate("/payment", {
-        replace: true,
-        state: {
-          registration: {
-            userId: session.user.id,
-            role: session.user.role,
-          },
-          profileSetupMessage,
-          providerCategory: form.serviceType.trim(),
-        },
-      });
+      if (registeredRole === "customer") {
+        navigate("/CustomerHome", { replace: true });
+      } else if (registeredRole === "provider") {
+        navigate("/ProviderHome", {
+          replace: true,
+          state: { profileSetupMessage },
+        });
+      } else {
+        setMessage("The server returned an invalid account role.");
+      }
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -191,6 +217,7 @@ export default function Register() {
 
       <div className="register-page">
         <form className="register-card" onSubmit={handleSubmit}>
+          {/* <BrandLogo className="register-brand-logo" /> */}
           <h1>REGISTER</h1>
 
           <div className="role-selection">
@@ -216,6 +243,8 @@ export default function Register() {
     Vendor
   </label>
 </div>
+
+          <label htmlFor="user name">User Name</label>
           <input
             id="username"
             name="username"

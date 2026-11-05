@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { bookingApi } from "../../services/api";
 import "./EventConnectBookings.css";
@@ -29,7 +29,7 @@ function BookingCard({ booking }) {
     ? "pending"
     : booking.status === "Accepted"
       ? "confirmed"
-      : "completed";
+      : "rejected";
 
   return (
     <article className="eb-booking-card">
@@ -78,9 +78,8 @@ export default function EventConnectBookings() {
   const [loadError, setLoadError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [calendarFilter, setCalendarFilter] = useState("2025 Calendar");
+  const [calendarFilter, setCalendarFilter] = useState("All Dates");
   const [showExport, setShowExport] = useState(false);
-  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -111,16 +110,47 @@ export default function EventConnectBookings() {
     const provider = service.provider?.username || "";
     const matchesQuery = `${service.title || ""} ${provider} ${booking._id} ${service.category || ""}`.toLowerCase().includes(query);
     const matchesFilter = activeFilter === "all" || booking.status === activeFilter;
-    return matchesQuery && matchesFilter;
-  }), [bookings, activeFilter, search]);
+    const eventYear = new Date(booking.eventDate).getFullYear();
+    const matchesYear = calendarFilter === "All Dates" || String(eventYear) === calendarFilter;
+    return matchesQuery && matchesFilter && matchesYear;
+  }), [bookings, activeFilter, search, calendarFilter]);
+  const calendarYears = useMemo(
+    () => [...new Set(bookings.map((booking) => new Date(booking.eventDate).getFullYear()).filter(Number.isFinite))]
+      .sort((left, right) => right - left),
+    [bookings]
+  );
   const acceptedCount = bookings.filter((booking) => booking.status === "Accepted").length;
   const pendingCount = bookings.filter((booking) => booking.status === "Pending").length;
+
+  function exportBookings() {
+    const rows = filteredBookings.map((booking) => [
+      booking._id,
+      booking.service?.title,
+      booking.service?.category,
+      booking.service?.provider?.username,
+      booking.eventDate,
+      booking.location,
+      booking.service?.price,
+      booking.status,
+    ]);
+    const csv = [
+      ["Booking ID", "Service", "Category", "Provider", "Event Date", "Location", "Price", "Status"],
+      ...rows,
+    ].map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "event-connect-bookings.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+    setShowExport(false);
+  }
 
   return (
     <div className="eb-page">
       <div className="eb-app">
         <ClientSidebar
-          onHelp={() => setNotice("Connecting you with the concierge team…")}
+          onHelp={() => navigate("/Messages")}
           onLogout={() => {
             clearSession();
             navigate("/login", { replace: true });
@@ -133,7 +163,7 @@ export default function EventConnectBookings() {
             <div className="eb-top-actions">
               <button type="button" className="eb-top-icon" aria-label="Notifications">♧<i /></button>
               <button type="button" className="eb-top-icon" aria-label="Bookings">▣<i /></button>
-              <div className="eb-user"><span className="eb-user-avatar">{user?.username?.charAt(0).toUpperCase() || "C"}</span><span className="eb-user-copy"><strong>{user?.username || "Customer"}</strong><small>Private Host</small></span><span className="eb-vip">VIP</span></div>
+              <div className="eb-user"><span className="eb-user-avatar">{user?.username?.charAt(0).toUpperCase() || "C"}</span><span className="eb-user-copy"><strong>{user?.username || "Customer"}</strong><small>Customer</small></span></div>
             </div>
           </header>
 
@@ -146,8 +176,8 @@ export default function EventConnectBookings() {
             <div className="eb-summary-cards">
               <div className="eb-summary-card"><span className="eb-summary-icon green">▣</span><div><small>ACCEPTED</small><strong>{acceptedCount}</strong></div></div>
               <div className="eb-summary-card"><span className="eb-summary-icon gold">⌛</span><div><small>PENDING</small><strong>{pendingCount}</strong></div></div>
-              <button className="eb-export-button" type="button" onClick={() => setShowExport((value) => !value)}>⇩ Export<br />Ledger</button>
-              {showExport && <div className="eb-export-menu"><button type="button" onClick={() => { setNotice("CSV export is a demo action."); setShowExport(false); }}>Export as CSV</button><button type="button" onClick={() => { setNotice("PDF export is a demo action."); setShowExport(false); }}>Export as PDF</button></div>}
+              <button className="eb-export-button" type="button" onClick={() => setShowExport((value) => !value)} disabled={loading || Boolean(loadError) || bookings.length === 0}>⇩ Export<br />Ledger</button>
+              {showExport && <div className="eb-export-menu"><button type="button" onClick={exportBookings}>Export filtered records as CSV</button><p>PDF export is not available.</p></div>}
             </div>
           </section>
 
@@ -163,7 +193,7 @@ export default function EventConnectBookings() {
               </div>
               <label className="eb-booking-search"><Icon>⌕</Icon><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search provider or event..." /></label>
               <select className="eb-calendar-select" value={calendarFilter} onChange={(event) => setCalendarFilter(event.target.value)} aria-label="Calendar range">
-                <option>2025 Calendar</option><option>2026 Calendar</option><option>All Dates</option>
+                <option>All Dates</option>{calendarYears.map((year) => <option key={year} value={String(year)}>{year}</option>)}
               </select>
               <button className="eb-new-booking" type="button" onClick={() => navigate("/BrowseServices")}>+ New Booking</button>
             </div>
@@ -178,13 +208,10 @@ export default function EventConnectBookings() {
 
               <aside className="eb-right-column">
                 <section className="eb-concierge-card">
-                  <div className="eb-concierge-heading"><span className="eb-concierge-icon">♜</span><div><h2>Booking Concierge</h2><small>DEDICATED SERVICE</small></div></div>
-                  <p>Need custom scheduling buffers, vendor insurance riders, or other milestone billing support? Submit a request.</p>
-                  <div className="eb-concierge-feature"><span>✧</span><div><strong>Vendor Guarantee</strong><small>All partner services providers are vetted & insured, backed by service certificates.</small></div></div>
-                  <div className="eb-concierge-feature"><span>♧</span><div><strong>48-Hour Grace Period</strong><small>Modify your headcount and schedule windows with zero penalty.</small></div></div>
-                  <div className="eb-concierge-feature"><span>♙</span><div><strong>Milestone Escrow</strong><small>Final balance payouts release only after service sign-off.</small></div></div>
-                  <button type="button" className="eb-concierge-call" onClick={() => setNotice("Concierge call requested.")}>☎ Request Concierge Call</button>
-                  <button type="button" className="eb-download" onClick={() => setNotice("Receipt download is a demo action.")}>Download All Receipts (ZIP)</button>
+                  <div className="eb-concierge-heading"><span className="eb-concierge-icon">▣</span><div><h2>Booking Support</h2><small>AVAILABLE ACTIONS</small></div></div>
+                  <p>Contact a provider through the booking-linked messaging page.</p>
+                  <Link className="eb-concierge-call" to="/Messages">View booking messages</Link>
+                  <p>Payment, receipt, and notification records are not available in the current backend.</p>
                 </section>
 
                 <section className="eb-timeline-card">
@@ -204,7 +231,6 @@ export default function EventConnectBookings() {
           </section>
         </main>
 
-        {notice && <div className="eb-toast" role="status">{notice}<button type="button" onClick={() => setNotice("")}>×</button></div>}
       </div>
     </div>
   );

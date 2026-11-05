@@ -1,27 +1,23 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { ApiError, bookingApi, messageApi, providerProfileApi, serviceApi } from "../../services/api";
+import BrandLogo from "../BrandLogo";
 import "./ProviderHome.css";
 
 const menu = [
   "Overview", "My Services", "Booking Requests", "Availability Calendar", "Messages",
-  "Reviews & Ratings", "Subscription & Membership", "Notifications", "My Profile", "Help & Support",
+  "Reviews & Ratings", "Subscription & Membership", "My Profile",
 ];
 
-const stats = [
-  { icon: "📖", label: "Total Bookings", value: null },
-  { icon: "⏳", label: "Pending Requests", value: null, css: "gold" },
-  { icon: "🎉", label: "Upcoming Events", value: null },
-  { icon: "💰", label: "Monthly Revenue", value: "Not available", small: true },
-  { icon: "⭐", label: "Average Rating", value: "Not available" },
-];
-
-const months = ["May", "Jun", "Jul", "Aug", "Sep", "Oct"];
 const revenueStats = ["TOTAL REVENUE", "AVG. BOOKING", "SETTLEMENT RATE", "DISPUTE RATE"];
 
-const firstReviews = [
-  { id: 1, who: "Opus Symphony Society", stars: 5, text: "Exquisite floral work. The hall looked breathtaking from the first minute.", replied: false },
-  { id: 2, who: "Summer Executive Retreat", stars: 4, text: "Professional team and on-time setup. Would book again.", replied: false },
+const stats = [
+  { icon: "📖", label: "Total Bookings" },
+  { icon: "⏳", label: "Pending Requests", css: "gold" },
+  { icon: "🎉", label: "Upcoming Events" },
+  { icon: "✦", label: "Active Services" },
+  { icon: "⭐", label: "Average Rating" },
 ];
 
 const PAGE_SIZE = 4;
@@ -39,26 +35,20 @@ const providerProfileFields = [
 const emptyProviderProfile = Object.fromEntries(providerProfileFields.map((field) => [field, ""]));
 
 // ---------- HELPERS ----------
+const serviceStatusLabel = {
+  Active: "Published",
+  Draft: "Pending Payment",
+  Paused: "Pending Payment",
+};
+
 const lkr = (n) => "LKR " + n.toLocaleString("en-US");
 const profileFormFrom = (profile) => Object.fromEntries(
   providerProfileFields.map((field) => [field, profile[field] || ""])
 );
 
-function getStoredUser() {
-  try { return JSON.parse(localStorage.getItem("user")); } catch { return null; }
-}
-
 function RevenueChart() {
-  const W = 520, H = 170, left = 10;
-  const step = (W - left * 2) / (months.length - 1);
-
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="ph-chart" role="img" aria-label="Monthly revenue not available">
-      <text x={W / 2} y="78" textAnchor="middle" fontSize="13" fill="#777">Not available</text>
-      {months.map((m, i) => (
-        <text key={m} x={left + step * i} y={H - 6} textAnchor="middle" fontSize="11" fill="#777">{m}</text>
-      ))}
-    </svg>
+    <p className="ph-sub" role="status">No payment or transaction data is available.</p>
   );
 }
 
@@ -66,10 +56,15 @@ function RevenueChart() {
 export default function ProviderHome() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [page, setPage] = useState("Overview");
+  const { user, clearSession } = useAuth();
+  const [page, setPage] = useState(location.state?.providerPage || "Overview");
+  const [calendarDate, setCalendarDate] = useState(() => new Date());
   const [providerServices, setProviderServices] = useState([]);
   const [servicesLoading, setServicesLoading] = useState(true);
   const [servicesError, setServicesError] = useState("");
+  const [providerStatus, setProviderStatus] = useState(null);
+  const [providerStatusLoading, setProviderStatusLoading] = useState(true);
+  const [providerStatusError, setProviderStatusError] = useState("");
   const [showServiceForm, setShowServiceForm] = useState(false);
   const [serviceSaving, setServiceSaving] = useState(false);
   const [busyServiceId, setBusyServiceId] = useState("");
@@ -96,11 +91,9 @@ export default function ProviderHome() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [messagesError, setMessagesError] = useState("");
   const [messageSending, setMessageSending] = useState(false);
-  const [reviews, setReviews] = useState(firstReviews);
   const [filter, setFilter] = useState("All");
   const [tablePage, setTablePage] = useState(1);
   const [messageDraft, setMessageDraft] = useState("");
-  const [notificationsRead, setNotificationsRead] = useState(false);
   const [providerProfile, setProviderProfile] = useState(null);
   const [profileForm, setProfileForm] = useState(emptyProviderProfile);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -108,20 +101,39 @@ export default function ProviderHome() {
   const [profileError, setProfileError] = useState("");
   const [editingProfile, setEditingProfile] = useState(false);
 
-  const user = getStoredUser();
   const name = providerProfile?.businessName || user?.username || "Event Connect Provider";
+
+  async function refreshProviderStatus() {
+    setProviderStatusError("");
+    try {
+      const currentStatus = await serviceApi.getProviderStatus();
+      setProviderStatus(currentStatus);
+    } catch (error) {
+      setProviderStatusError(error.message);
+    } finally {
+      setProviderStatusLoading(false);
+    }
+  }
 
   useEffect(() => {
     let active = true;
-    serviceApi.getMyServices()
-      .then(({ services: currentServices }) => {
-        if (active) setProviderServices(currentServices);
+    Promise.all([serviceApi.getMyServices(), serviceApi.getProviderStatus()])
+      .then(([{ services: currentServices }, currentStatus]) => {
+        if (!active) return;
+        setProviderServices(currentServices);
+        setProviderStatus(currentStatus);
       })
       .catch((error) => {
-        if (active) setServicesError(error.message);
+        if (active) {
+          setServicesError(error.message);
+          setProviderStatusError(error.message);
+        }
       })
       .finally(() => {
-        if (active) setServicesLoading(false);
+        if (active) {
+          setServicesLoading(false);
+          setProviderStatusLoading(false);
+        }
       });
 
     return () => {
@@ -183,7 +195,6 @@ export default function ProviderHome() {
   }, [page, activeMessageBooking?._id]);
 
   useEffect(() => {
-    if (page !== "My Profile") return undefined;
     let active = true;
     setProfileLoading(true);
     setProfileError("");
@@ -213,7 +224,7 @@ export default function ProviderHome() {
     return () => {
       active = false;
     };
-  }, [page, user?.username, location.state?.providerCategory]);
+  }, [user?.username, location.state?.providerCategory]);
 
   async function saveProviderProfile(event) {
     event.preventDefault();
@@ -265,6 +276,7 @@ export default function ProviderHome() {
       price: Number(serviceForm.price),
       priceUnit: serviceForm.priceUnit.trim() || "Starting Price",
       image: serviceForm.image.trim(),
+      status: undefined,
     };
 
     try {
@@ -289,6 +301,7 @@ export default function ProviderHome() {
       try {
         const { services: refreshedServices } = await serviceApi.getMyServices();
         setProviderServices(refreshedServices);
+        await refreshProviderStatus();
       } catch (refreshError) {
         const operation = editingService ? "updated" : "created";
         setServiceError(`Service was ${operation}, but the list could not be refreshed: ${refreshError.message}`);
@@ -343,10 +356,44 @@ export default function ProviderHome() {
       try {
         const { services: refreshedServices } = await serviceApi.getMyServices();
         setProviderServices(refreshedServices);
+        await refreshProviderStatus();
       } catch (refreshError) {
         setServiceError(`Service was deleted, but the list could not be refreshed: ${refreshError.message}`);
       }
     } catch (error) {
+      setServiceError(error.message);
+    } finally {
+      setBusyServiceId("");
+    }
+  }
+
+  async function setServiceStatus(service, status) {
+    setServiceError("");
+    setServiceSuccess("");
+    setBusyServiceId(service._id);
+    try {
+      if (status === "Active") {
+        await serviceApi.publish(service._id);
+      } else {
+        await serviceApi.update(service._id, { status });
+      }
+      setServiceSuccess(status === "Active" ? "Service published successfully." : "Service paused successfully.");
+      const [{ services: currentServices }] = await Promise.all([
+        serviceApi.getMyServices(),
+        refreshProviderStatus(),
+      ]);
+      setProviderServices(currentServices);
+    } catch (error) {
+      if (error.status === 402) {
+        navigate("/payment", {
+          state: {
+            source: "publish-service",
+            serviceId: service._id,
+            providerId: user?.id,
+          },
+        });
+        return;
+      }
       setServiceError(error.message);
     } finally {
       setBusyServiceId("");
@@ -378,10 +425,6 @@ export default function ProviderHome() {
       setBusyBookingId("");
     }
   }
-  function respond(id) {
-    setReviews(reviews.map((r) => (r.id === id ? { ...r, replied: true } : r)));
-  }
-
   // Table: filter, then split into pages
   const bookingEvents = requests.map((booking) => ({
     id: booking._id,
@@ -389,10 +432,16 @@ export default function ProviderHome() {
     type: booking.service?.category || "Service",
     client: booking.customer?.username || "Customer",
     date: new Date(booking.eventDate).toLocaleString(),
+    dateValue: new Date(booking.eventDate),
     place: booking.location,
-    amount: booking.service?.price || 0,
+    amount: booking.service?.price === undefined ? "Not available" : lkr(booking.service.price),
     status: booking.status === "Accepted" ? "Confirmed" : booking.status,
   }));
+  const upcomingEvents = bookingEvents
+    .filter((event) => !Number.isNaN(event.dateValue.getTime()) && event.dateValue >= new Date())
+    .sort((left, right) => left.dateValue - right.dateValue);
+  const calendarDays = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0).getDate();
+  const calendarStartDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay();
   const bookingFeed = requests.slice(0, 4).map((booking) => ({
     text: `Booking request ${booking.status.toLowerCase()} from ${booking.customer?.username || "Customer"}`,
     time: new Date(booking.createdAt).toLocaleString(),
@@ -401,15 +450,36 @@ export default function ProviderHome() {
   const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
   const rows = shown.slice((tablePage - 1) * PAGE_SIZE, tablePage * PAGE_SIZE);
 
+  function exportSchedule() {
+    const data = [
+      ["Booking ID", "Service", "Category", "Customer", "Event Date", "Location", "Price", "Status"],
+      ...bookingEvents.map((event) => [
+        event.id,
+        event.name,
+        event.type,
+        event.client,
+        event.date,
+        event.place,
+        event.amount,
+        event.status,
+      ]),
+    ].map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([data], { type: "text/csv;charset=utf-8;" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "provider-booking-records.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   // Donut
   const total = breakdown.reduce((s, b) => s + b.value, 0);
   const R = 40, C = 2 * Math.PI * R;
   let offset = 0;
 
   function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+    clearSession();
+    navigate("/login", { replace: true });
   }
 
   async function sendMessage(event) {
@@ -440,8 +510,9 @@ export default function ProviderHome() {
       "Booking Requests": "Review incoming requests and respond to clients.",
       "Availability Calendar": "Review upcoming events and manage your schedule.",
       Messages: "Keep client conversations and event details in one place.",
-      "Reviews & Ratings": "Review client feedback and respond to your reviews.",
-      "Subscription & Membership": "Review your provider membership and plan benefits.",
+      "Reviews & Ratings": "Review feedback associated with your services.",
+      "Subscription & Membership": "Subscription information available in the platform.",
+      "Earnings & Payments": "Payment and transaction information available in the platform.",
       Notifications: "Stay up to date with booking, payment, and review activity.",
       "My Profile": "Review the public profile and account details clients see.",
       "Help & Support": "Get assistance with your provider account and events.",
@@ -455,11 +526,6 @@ export default function ProviderHome() {
             <h1>{page}</h1>
             <p>{pageDescriptions[page]}</p>
           </div>
-          {page === "Notifications" && (
-            <button className="ph-btn light" onClick={() => setNotificationsRead(true)}>
-              Mark all as read
-            </button>
-          )}
         </div>
 
         {page === "My Services" && (
@@ -469,9 +535,8 @@ export default function ProviderHome() {
               <button
                 type="button"
                 className="ph-btn dark"
+                disabled={!showServiceForm && (providerStatusLoading || Boolean(providerStatusError) || providerStatus?.serviceCount >= providerStatus?.maxServiceCount)}
                 onClick={() => {
-                  setServiceError("");
-                  setServiceSuccess("");
                   if (showServiceForm) cancelServiceForm();
                   else {
                     setEditingService(null);
@@ -482,6 +547,13 @@ export default function ProviderHome() {
                 {showServiceForm ? "Cancel" : "Add New Service"}
               </button>
             </div>
+            {!providerStatusLoading && !providerStatusError && providerStatus.serviceCount >= providerStatus.maxServiceCount && (
+              <p className="ph-subscription-limit" role="status">
+                {providerStatus.maxServiceCount === providerStatus.freeServiceLimit
+                  ? "You have reached your free service limit (5/5)."
+                  : "You have reached the service limit configured for your subscription plan."}
+              </p>
+            )}
             {showServiceForm && (
               <form className="ph-profile-form ph-card" onSubmit={createService}>
                 <label>
@@ -508,12 +580,6 @@ export default function ProviderHome() {
                   <span>Image URL</span>
                   <input type="url" value={serviceForm.image} onChange={(event) => setServiceForm((current) => ({ ...current, image: event.target.value }))} />
                 </label>
-                <label>
-                  <span>Status</span>
-                  <select value={serviceForm.status} onChange={(event) => setServiceForm((current) => ({ ...current, status: event.target.value }))}>
-                    {["Active", "Draft", "Paused"].map((status) => <option key={status}>{status}</option>)}
-                  </select>
-                </label>
                 <div className="ph-profile-form-actions">
                   <button className="ph-btn dark" type="submit" disabled={serviceSaving}>
                     {serviceSaving ? "Saving..." : editingService ? "Update Service" : "Save Service"}
@@ -532,12 +598,41 @@ export default function ProviderHome() {
             <div className="ph-page-grid">
               {providerServices.map((service) => (
                 <article className="ph-card ph-service-card" key={service._id}>
-                  <span className="ph-service-icon">✦</span>
+                  <div
+                    className="ph-service-image"
+                    role="img"
+                    aria-label={`${service.title} service image`}
+                    style={service.image ? { backgroundImage: `url("${service.image}")` } : undefined}
+                  >
+                    {!service.image && <span className="ph-service-icon">✦</span>}
+                  </div>
                   <span className="ph-page-eyebrow">{service.category}</span>
                   <h3>{service.title}</h3>
                   <div className="ph-service-details"><span>{service.description || "No description provided."}</span><b>{lkr(service.price)} {service.priceUnit || ""}</b></div>
-                  <span className={`ph-pill ${service.status === "Active" ? "ok" : "gold"}`}>{service.status}</span>
+                  <span className={`ph-pill ${service.status === "Active" ? "ok" : "gold"}`}>
+                      {serviceStatusLabel[service.status] || service.status}
+                  </span>
                   <div className="ph-profile-form-actions">
+                    {service.status !== "Active" && (
+                      <button
+                        className="ph-btn gold small"
+                        type="button"
+                        disabled={busyServiceId === service._id}
+                        onClick={() => setServiceStatus(service, "Active")}
+                      >
+                        Publish
+                      </button>
+                    )}
+                    {service.status === "Active" && (
+                      <button
+                        className="ph-btn light small"
+                        type="button"
+                        disabled={busyServiceId === service._id}
+                        onClick={() => setServiceStatus(service, "Paused")}
+                      >
+                        Pause
+                      </button>
+                    )}
                     <button className="ph-btn dark small" type="button" disabled={busyServiceId === service._id} onClick={() => startEditingService(service)}>Edit</button>
                     <button className="ph-btn light small" type="button" disabled={busyServiceId === service._id} onClick={() => deleteService(service)}>
                       {busyServiceId === service._id ? "Deleting..." : "Delete"}
@@ -583,29 +678,40 @@ export default function ProviderHome() {
         {page === "Availability Calendar" && (
           <div className="ph-grid-2">
             <section className="ph-card">
-              <div className="ph-head"><div><h3>November 2026</h3><p className="ph-sub">Your upcoming confirmed and pending events.</p></div><span className="ph-pill purple">Monthly schedule</span></div>
+              <div className="ph-head">
+                <div><h3>{calendarDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h3><p className="ph-sub">Booking records for your provider account.</p></div>
+                <div>
+                  <button className="ph-btn light small" type="button" onClick={() => setCalendarDate((date) => new Date(date.getFullYear(), date.getMonth() - 1, 1))}>Previous</button>
+                  <button className="ph-btn light small" type="button" onClick={() => setCalendarDate((date) => new Date(date.getFullYear(), date.getMonth() + 1, 1))}>Next</button>
+                </div>
+              </div>
+              {bookingLoading && <p className="ph-sub" role="status">Loading booking records...</p>}
+              {bookingError && <p className="ph-sub" role="alert">{bookingError}</p>}
               <div className="ph-calendar-days">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => <span key={day}>{day}</span>)}</div>
               <div className="ph-calendar-dates">
-                {Array.from({ length: 30 }, (_, index) => {
+                {Array.from({ length: calendarStartDay }, (_, index) => <span key={`empty-${index}`} aria-hidden="true" />)}
+                {Array.from({ length: calendarDays }, (_, index) => {
                   const day = index + 1;
                   const booking = requests.find((item) => {
                     const date = new Date(item.eventDate);
-                    return date.getFullYear() === 2026 && date.getMonth() === 10 && date.getDate() === day;
+                    return date.getFullYear() === calendarDate.getFullYear() &&
+                      date.getMonth() === calendarDate.getMonth() &&
+                      date.getDate() === day;
                   });
                   const dateClass = booking?.status === "Accepted" ? "booked" : booking?.status === "Pending" ? "pending" : "";
                   return <span className={dateClass} key={day}>{day}</span>;
                 })}
               </div>
-              <p className="ph-calendar-legend"><i /> Booked or reserved dates</p>
+              <p className="ph-calendar-legend"><i /> Booking dates; availability is not configured.</p>
             </section>
             <section className="ph-card">
               <h3>Upcoming schedule</h3>
-              <p className="ph-sub">Next events on your calendar.</p>
+              <p className="ph-sub">Upcoming booking records.</p>
               <ul className="ph-page-list">
-                {bookingEvents.slice(0, 4).map((event) => (
+                {upcomingEvents.slice(0, 4).map((event) => (
                   <li key={event.id}><b>{event.name}</b><small>{event.date} · {event.place}</small><span className={`ph-pill ${event.status === "Confirmed" ? "ok" : "gold"}`}>{event.status}</span></li>
                 ))}
-                {!bookingEvents.length && <li><b>No bookings yet</b><small>New booking requests will appear here.</small></li>}
+                {!bookingLoading && !bookingError && !upcomingEvents.length && <li><b>No upcoming booking records</b></li>}
               </ul>
             </section>
           </div>
@@ -652,48 +758,36 @@ export default function ProviderHome() {
 
         {page === "Reviews & Ratings" && (
           <section className="ph-card">
-            <div className="ph-head"><div><h3>Client reviews</h3><p className="ph-sub">Your average rating is 4.8 out of 5.</p></div><span className="ph-pill gold">★ 4.8 Average</span></div>
-            {reviews.map((review) => (
-              <article className="ph-review" key={review.id}>
-                <div className="ph-row"><strong>{review.who}</strong><span className="ph-stars">{"★".repeat(review.stars)}{"☆".repeat(5 - review.stars)}</span></div>
-                <p>{review.text}</p>
-                {review.replied ? <small className="ph-ok">Response sent</small> : <button className="ph-link-btn" onClick={() => respond(review.id)}>Respond to review</button>}
-              </article>
-            ))}
+            <div className="ph-head"><div><h3>Client reviews</h3><p className="ph-sub">Review records are not available through the current backend.</p></div><span className="ph-pill purple">Not available</span></div>
+            <p className="ph-sub">Not configured: the backend has no review model or review API.</p>
+          </section>
+        )}
+
+        {page === "Earnings & Payments" && (
+          <section className="ph-card">
+            <h3>Earnings &amp; Payments</h3>
+            <p className="ph-sub">Not available: no payment model or verified transaction records are configured.</p>
           </section>
         )}
 
         {page === "Subscription & Membership" && (
-          <div className="ph-grid-2">
-            <section className="ph-card ph-membership-card">
-              <span className="ph-pill gold">CURRENT MEMBERSHIP</span>
-              <h2>Event Connect Pro</h2>
-              <p>Get discovered by more clients and manage your event business with premium provider tools.</p>
-              <strong className="ph-membership-price">LKR 12,500 <small>/ month</small></strong>
-              <span className="ph-pill ok">Membership active</span>
-            </section>
-            <section className="ph-card">
-              <h3>Your Pro benefits</h3>
-              <ul className="ph-page-list">
-                {["Priority placement in provider search", "Unlimited service listings", "Booking and calendar management", "Verified Pro profile badge", "Monthly performance insights"].map((benefit) => <li key={benefit}><b>{benefit}</b><span className="ph-ok">Included</span></li>)}
-              </ul>
-            </section>
-          </div>
+          <section className="ph-card">
+            <h3>Subscription &amp; Membership</h3>
+            <p className="ph-sub">Not available: no subscription model, records, or API are configured.</p>
+          </section>
         )}
 
         {page === "Notifications" && (
           <section className="ph-card">
-            <div className="ph-head"><div><h3>Recent activity</h3><p className="ph-sub">Booking and account updates.</p></div></div>
-            <ul className="ph-page-list">
-              {feed.map((item) => <li className={notificationsRead ? "read" : ""} key={item.text}><b>{item.text}</b><small>{item.time}</small>{!notificationsRead && <span className="ph-pill purple">New</span>}</li>)}
-            </ul>
+            <h3>Notifications</h3>
+            <p className="ph-sub">Not available: notification records are not configured in the database.</p>
           </section>
         )}
 
         {page === "My Profile" && (
           <div className="ph-grid-2">
             <section className="ph-card">
-              <div className="ph-profile-summary"><span className="ph-avatar large">{name.charAt(0).toUpperCase()}</span><div><h3>{name}</h3><p className="ph-sub">Verified Event Connect provider</p></div></div>
+              <div className="ph-profile-summary"><span className="ph-avatar large">{name.charAt(0).toUpperCase()}</span><div><h3>{name}</h3><p className="ph-sub">Provider account</p></div></div>
               <ul className="ph-page-list">
                 <li><b>Account name</b><span>{name}</span></li>
                 <li><b>Account email</b><span>{user?.email || "Not provided"}</span></li>
@@ -791,7 +885,7 @@ export default function ProviderHome() {
       {/* ================= SIDEBAR ================= */}
       <aside className="ph-side">
         <div className="ph-brand">
-          <span className="ph-logo">✦</span>
+          <BrandLogo className="ph-logo" />
           <div><strong>Event Connect</strong><small>PROVIDER PORTAL</small></div>
         </div>
 
@@ -825,7 +919,7 @@ export default function ProviderHome() {
             <button className="ph-icon" aria-label="Notifications" onClick={() => setPage("Notifications")}>🔔<i></i></button>
             <div className="ph-profile">
               <span className="ph-avatar">{name.charAt(0).toUpperCase()}</span>
-              <div><strong>{name}</strong><small>Verified Provider</small></div>
+              <div><strong>{name}</strong><small>Service Provider</small></div>
             </div>
           </div>
         </header>
@@ -834,16 +928,65 @@ export default function ProviderHome() {
           {location.state?.profileSetupMessage && (
             <p className="ph-sub" role="alert">{location.state.profileSetupMessage}</p>
           )}
+          <section className="ph-card ph-subscription-status" aria-label="Subscription status">
+            <div className="ph-subscription-heading">
+              <div>
+                <span className="ph-page-eyebrow">ACCOUNT PLAN</span>
+                <h2>Subscription Status</h2>
+              </div>
+              {providerStatusLoading ? (
+                <span className="ph-pill purple">Loading...</span>
+              ) : providerStatusError ? (
+                <span className="ph-pill no">Unavailable</span>
+              ) : (
+                <span className={`ph-pill ${providerStatus?.subscription?.status === "Subscribed" ? "ok" : providerStatus?.subscription?.status === "Expired" ? "no" : "gold"}`}>
+                  {providerStatus?.subscription?.status || "Not Subscribed"}
+                </span>
+              )}
+            </div>
+            {providerStatusError ? (
+              <p className="ph-sub" role="alert">{providerStatusError}</p>
+            ) : providerStatusLoading ? (
+              <p className="ph-sub" role="status">Loading your saved subscription and service usage...</p>
+            ) : (
+              <>
+                <div className="ph-subscription-facts">
+                  <span><small>Plan</small><strong>{providerStatus.subscription.planName || "Not configured"}</strong></span>
+                  <span><small>Starts</small><strong>{providerStatus.subscription.startsAt ? new Date(providerStatus.subscription.startsAt).toLocaleDateString() : "Not configured"}</strong></span>
+                  <span><small>Expires</small><strong>{providerStatus.subscription.expiresAt ? new Date(providerStatus.subscription.expiresAt).toLocaleDateString() : "Not configured"}</strong></span>
+                  <span><small>Services Added</small><strong>{providerStatus.serviceCount} / {providerStatus.freeServiceLimit}</strong></span>
+                  <span><small>Remaining Free Services</small><strong>{providerStatus.remainingFreeServices}</strong></span>
+                </div>
+                {providerStatus.serviceCount >= providerStatus.maxServiceCount && (
+                  <p className="ph-subscription-limit" role="status">
+                    {providerStatus.maxServiceCount === providerStatus.freeServiceLimit
+                      ? "You have reached your free service limit (5/5)."
+                      : "You have reached the service limit configured for your subscription plan."}
+                  </p>
+                )}
+              </>
+            )}
+          </section>
           {page === "Overview" ? (
             <>
           {/* ----- Welcome ----- */}
           <section className="ph-welcome">
             <div>
               <h1>Welcome back, {name}!</h1>
-              <p><span className="ph-pill white">✔ Verified Pro</span> &nbsp; You have <b>{pendingCount} pending requests</b> waiting for your reply.</p>
+              <p>You have <b>{bookingLoading || bookingError ? "—" : pendingCount} pending requests</b> waiting for your reply.</p>
             </div>
             <div className="ph-welcome-buttons">
-              <button className="ph-btn gold" onClick={() => navigate("/MyServices")}>+ Add New Service</button>
+              <button
+                className="ph-btn gold"
+                disabled={providerStatusLoading || providerStatusError || providerStatus?.serviceCount >= providerStatus?.maxServiceCount}
+                onClick={() => {
+                  setPage("My Services");
+                  setEditingService(null);
+                  setShowServiceForm(true);
+                }}
+              >
+                + Add New Service
+              </button>
               <button className="ph-btn glass" onClick={() => setPage("Availability Calendar")}>Open Calendar</button>
               <button className="ph-btn glass" onClick={() => setPage("Booking Requests")}>Manage Bookings</button>
             </div>
@@ -856,7 +999,15 @@ export default function ProviderHome() {
                 <span className="ph-icon-box">{s.icon}</span>
                 <small>{s.label}</small>
                 <strong className={s.small ? "smaller" : ""}>
-                  {s.label === "Pending Requests" ? pendingCount : s.label === "Total Bookings" ? requests.length : s.label === "Upcoming Events" ? upcomingCount : s.value}
+                  {s.label === "Pending Requests"
+                    ? bookingLoading || bookingError ? "—" : pendingCount
+                    : s.label === "Total Bookings"
+                      ? bookingLoading || bookingError ? "—" : requests.length
+                      : s.label === "Upcoming Events"
+                        ? bookingLoading || bookingError ? "—" : upcomingCount
+                        : s.label === "Active Services"
+                          ? servicesLoading || servicesError ? "—" : providerServices.filter((service) => service.status === "Active").length
+                          : "Not available"}
                 </strong>
               </div>
             ))}
@@ -880,6 +1031,11 @@ export default function ProviderHome() {
             <section className="ph-card">
               <h3>Booking Breakdown</h3>
               <p className="ph-sub">Status of all your bookings.</p>
+              {bookingLoading && <p className="ph-sub" role="status">Loading booking records...</p>}
+              {bookingError && <p className="ph-sub" role="alert">{bookingError}</p>}
+              {!bookingLoading && !bookingError && total === 0 && <p className="ph-sub">No booking records found.</p>}
+              {!bookingLoading && !bookingError && total > 0 && (
+                <>
               <svg viewBox="0 0 100 100" className="ph-donut" role="img" aria-label="Booking breakdown">
                 <g transform="rotate(-90 50 50)">
                   {breakdown.map((b) => {
@@ -898,6 +1054,8 @@ export default function ProviderHome() {
                   <li key={b.name}><i style={{ background: b.color }}></i>{b.name}<b>{b.value}</b></li>
                 ))}
               </ul>
+                </>
+              )}
             </section>
           </div>
 
@@ -905,8 +1063,8 @@ export default function ProviderHome() {
           <div className="ph-grid-2">
             <section className="ph-card">
               <div className="ph-head">
-                <div><h3>Recent Booking Requests</h3><p className="ph-sub">Respond quickly to win more bookings.</p></div>
-                <span className="ph-pill gold">{pendingCount} Pending</span>
+                <div><h3>Recent Booking Requests</h3><p className="ph-sub">Respond to stored booking requests.</p></div>
+                <span className="ph-pill gold">{bookingLoading || bookingError ? "—" : pendingCount} Pending</span>
               </div>
 
               {bookingLoading && <p className="ph-sub" role="status">Loading booking requests...</p>}
@@ -931,28 +1089,24 @@ export default function ProviderHome() {
                   </div>
                 </div>
               ))}
-              <button type="button" className="ph-link center" onClick={() => setPage("Booking Requests")}>View All {pendingCount} Pending Inquiries →</button>
+              <button type="button" className="ph-link center" onClick={() => setPage("Booking Requests")}>View All {bookingLoading || bookingError ? "—" : pendingCount} Pending Inquiries →</button>
             </section>
 
             <div className="ph-stack">
               <section className="ph-card">
-                <h3>Recent Reviews</h3>
-                {reviews.map((r) => (
-                  <div className="ph-review" key={r.id}>
-                    <div className="ph-row"><strong>{r.who}</strong><span className="ph-stars">{"★".repeat(r.stars)}{"☆".repeat(5 - r.stars)}</span></div>
-                    <p>{r.text}</p>
-                    {r.replied ? <small className="ph-ok">Response sent ✅</small> : <button className="ph-link-btn" onClick={() => respond(r.id)}>Respond to review</button>}
-                  </div>
-                ))}
+                <h3>Reviews</h3>
+                <p className="ph-sub">Not available: review records are not connected to the backend.</p>
               </section>
 
               <section className="ph-card">
-                <h3>Live Activity Feed</h3>
+                <h3>Recent Booking Records</h3>
                 <ul className="ph-feed">
                   {bookingFeed.map((f) => (
                     <li key={f.text}><i></i><div><b>{f.text}</b><small>{f.time}</small></div></li>
                   ))}
-                  {!bookingFeed.length && <li><i></i><div><b>No booking activity yet</b></div></li>}
+                  {bookingLoading && <li role="status"><i></i><div><b>Loading booking records...</b></div></li>}
+                  {bookingError && <li role="alert"><i></i><div><b>{bookingError}</b></div></li>}
+                  {!bookingLoading && !bookingError && !bookingFeed.length && <li><i></i><div><b>No booking records found</b></div></li>}
                 </ul>
               </section>
             </div>
@@ -961,8 +1115,8 @@ export default function ProviderHome() {
           {/* ----- Upcoming confirmed events table ----- */}
           <section className="ph-card">
             <div className="ph-head">
-              <div><h3>Upcoming Confirmed Events</h3><p className="ph-sub">Your schedule at a glance.</p></div>
-              <button className="ph-btn light small">Export Schedule</button>
+              <div><h3>Booking Records</h3><p className="ph-sub">Bookings associated with your provider account.</p></div>
+              <button className="ph-btn light small" type="button" onClick={exportSchedule} disabled={bookingLoading || Boolean(bookingError) || !bookingEvents.length}>Export Schedule</button>
             </div>
 
             <div className="ph-filters">
@@ -985,16 +1139,21 @@ export default function ProviderHome() {
                       <td>{e.client}</td>
                       <td>{e.date}</td>
                       <td>{e.place}</td>
-                      <td>{lkr(e.amount)}</td>
+                      <td>{e.amount}</td>
                       <td><span className={`ph-pill ${e.status === "Confirmed" ? "ok" : "gold"}`}>{e.status}</span></td>
                     </tr>
                   ))}
+                  {!bookingLoading && !bookingError && rows.length === 0 && (
+                    <tr><td colSpan="7" className="ph-sub">No booking records match this view.</td></tr>
+                  )}
+                  {bookingLoading && <tr><td colSpan="7" className="ph-sub">Loading bookings...</td></tr>}
+                  {bookingError && <tr><td colSpan="7" className="ph-sub" role="alert">{bookingError}</td></tr>}
                 </tbody>
               </table>
             </div>
 
             <div className="ph-pager">
-              <small>Showing {rows.length} of {shown.length} confirmed events</small>
+              <small>Showing {rows.length} of {shown.length} booking records</small>
               <div>
                 <button onClick={() => setTablePage(Math.max(1, tablePage - 1))} disabled={tablePage === 1}>Previous</button>
                 {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (

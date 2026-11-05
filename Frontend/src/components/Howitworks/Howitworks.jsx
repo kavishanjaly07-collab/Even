@@ -91,7 +91,7 @@ export default function HowItWorks() {
   return (
     <>
       {/* SECTION 1: How it works (centered) */}
-      <section className="steps-section">
+      <section id="how-it-works" className="steps-section">
         <div className="container">
           <div className="heading center">
             <span className="eyebrow">EFFORTLESS COORDINATION</span>

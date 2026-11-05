@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  font-family: Inter, Arial, sans-serif;
+  font-family: var(--font-family);
   position: relative;
 
   /* Put your photo in the "public" folder (same one used for Register) */
@@ -25,7 +25,7 @@
 }
 
 /* ---------- CARD ---------- */
-.login-card {
+.login-page .login-card {
   position: relative; /* keeps the card above the white layer */
   width: 100%;
   max-width: 380px;
@@ -35,14 +35,24 @@
   text-align: center;
 }
 
-.login-card h1 {
+.login-page .login-card h1 {
   color: #4a0e63;
   font-size: 28px;
   letter-spacing: 1px;
   margin-bottom: 20px;
 }
 
-.login-card label {
+.login-page .login-brand-logo {
+  display: block;
+  width: min(100%, 210px);
+  height: auto;
+  aspect-ratio: 1408 / 768;
+  margin: 0 auto 18px;
+  object-fit: contain;
+  border-radius:250px;
+}
+
+.login-page .login-card label {
   display: block;
   text-align: left;
   font-size: 14px;
@@ -50,27 +60,32 @@
   color: #222;
 }
 
-.login-card input {
+.login-page .login-card input {
   width: 100%;
-  height: 22px;
-  padding: 0 8px;
-  margin-bottom: 30px;
+  min-height: 44px;
+  padding: 10px 12px;
+  margin-bottom: 20px;
   border: none;
+  border-radius: 8px;
   background: #d4d4d4;
-  font-size: 14px;
+  font-family: inherit;
+  font-size: 15px;
   outline: none;
 }
 
-.login-card input:focus {
+.login-page .login-card input:focus {
   outline: 2px solid #4a0e63;
 }
 
 /* ---------- BUTTONS (Login + Register share this style) ---------- */
-.pill-btn {
-  display: block;
+.login-page .pill-btn {
+  display: inline-flex;
   width: 180px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto;
-  padding: 7px 0;
+  padding: 10px 16px;
   border: none;
   border-radius: 999px;
   background: #4a0e63;
@@ -81,19 +96,31 @@
   cursor: pointer;
 }
 
-.pill-btn:hover {
+.login-page .pill-btn:hover {
   background: #5f1580;
 }
 
 /* ---------- EXTRA TEXT ---------- */
-.login-message {
+.login-page .login-message {
   margin-top: 14px;
   font-size: 13px;
   color: #4a0e63;
 }
 
-.no-account {
-  margin: 40px 0 12px;
-  font-size: 13px;
+.login-page .no-account {
+  margin: 28px 0 12px;
+  font-size: 15px;
   color: #222;
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-page .login-card {
+    max-width: 420px;
+    padding: 36px 24px;
+    border-radius: 28px;
+  }
 }

@@ -20,7 +20,7 @@
 }
 
 /* ---------- GRID: 3 CARDS ---------- */
-.providers-grid {
+.providers-section .providers-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
@@ -29,7 +29,7 @@
 }
 
 /* ---------- CARD ---------- */
-.provider-card {
+.providers-section .provider-card {
   background: #fff;
   border-radius: 18px;
   overflow: hidden;
@@ -40,13 +40,13 @@
 }
 
 /* Hover effect: card lifts up a little */
-.provider-card:hover {
+.providers-section .provider-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(59, 10, 82, 0.18);
 }
 
 /* ---------- PHOTO PART ---------- */
-.provider-image {
+.providers-section .provider-image {
   height: 186px;
   background-color: #5a2d6e; /* shows if the photo is missing */
   background-size: cover;
@@ -57,45 +57,45 @@
   justify-content: space-between; /* top stuff up, chips down */
 }
 
-.image-top {
+.providers-section .image-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
 
-.verified-pill {
+.providers-section .verified-pill {
   display: inline-block;
   background: var(--purple-dark);
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   padding: 6px 12px;
   border-radius: 999px;
 }
 
-.check {
+.providers-section .check {
   color: var(--gold);
-  font-size: 9px;
+  font-size: 13px;
 }
 
 /* The promo pill sits under the verified pill */
-.promo-pill {
+.providers-section .promo-pill {
   display: table; /* puts it on its own line */
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   padding: 5px 12px;
   border-radius: 999px;
 }
-.promo-pill.gold {
+.providers-section .promo-pill.gold {
   background: var(--gold);
   color: var(--purple-dark);
 }
-.promo-pill.purple {
+.providers-section .promo-pill.purple {
   background: #a78bd6;
   color: var(--purple-dark);
 }
 
-.heart {
+.providers-section .heart {
   width: 26px;
   height: 26px;
   border: none;
@@ -105,19 +105,19 @@
   cursor: pointer;
   line-height: 1;
 }
-.heart.liked {
+.providers-section .heart.liked {
   color: #dc2626;
 }
 
 /* Two small chips on a dark strip at the bottom of the photo */
-.image-chips {
+.providers-section .image-chips {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   color: #fff;
 }
-.image-chips span {
+.providers-section .image-chips span {
   max-width: 50%; /* long chips wrap onto two lines instead of overflowing */
   background: rgba(59, 10, 82, 0.75);
   padding: 5px 8px;
@@ -125,12 +125,12 @@
 }
 
 /* ---------- INFO PART ---------- */
-.provider-info {
+.providers-section .provider-info {
   padding: 14px 14px 16px;
   flex: 1; /* makes all cards the same height */
 }
 
-.name-row {
+.providers-section .name-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -138,39 +138,39 @@
   margin-bottom: 10px;
 }
 
-.name-row h3 {
+.providers-section .name-row h3 {
   font-family: "Playfair Display", serif;
-  font-size: 12px;
+  font-size: 13px;
 }
 
-.rating {
+.providers-section .rating {
   background: var(--field-bg);
   padding: 4px 8px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   white-space: nowrap;
 }
-.rating small {
+.providers-section .rating small {
   color: #777;
-  font-size: 11px;
+  font-size: 13px;
 }
-.star {
+.providers-section .star {
   color: var(--gold-text);
 }
 
-.location {
+.providers-section .location {
   display: inline-block;
   background: var(--field-bg);
   padding: 4px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: #555;
   margin-bottom: 10px;
 }
 
 /* Shows only 2 lines of text, then "..." */
-.description {
-  font-size: 12px;
+.providers-section .description {
+  font-size: 13px;
   line-height: 1.5;
   color: #444;
   margin-bottom: 12px;
@@ -180,26 +180,26 @@
   overflow: hidden;
 }
 
-.tags {
+.providers-section .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
-.tags span {
+.providers-section .tags span {
   background: #e8e8e4;
   color: #444;
-  font-size: 12px;
+  font-size: 13px;
   padding: 5px 10px;
   border-radius: 6px;
 }
 
 /* ---------- PRICE + BUTTONS PART ---------- */
-.provider-footer {
+.providers-section .provider-footer {
   background: #f8f8f5;
   padding: 12px 14px 16px;
 }
 
-.price-row {
+.providers-section .price-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -207,72 +207,72 @@
   margin-bottom: 4px;
 }
 
-.invest-label {
-  font-size: 12px;
+.providers-section .invest-label {
+  font-size: 13px;
   letter-spacing: 0.5px;
   color: #555;
 }
 
-.save-pill {
+.providers-section .save-pill {
   background: var(--purple-bg);
   color: var(--purple);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   padding: 4px 8px;
   border-radius: 6px;
 }
 
-.price-line {
+.providers-section .price-line {
   font-size: 13px;
   margin-bottom: 14px;
 }
-.price-line s {
+.providers-section .price-line s {
   color: #888;
-  font-size: 12px;
+  font-size: 13px;
   margin-left: 4px;
 }
 
-.button-row {
+.providers-section .button-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
 }
 
-.view-link {
+.providers-section .view-link {
   flex: 1;
   text-align: center;
   color: var(--purple);
-  font-size: 12px;
+  font-size: 13px;
   border: 1px solid var(--gold);
   border-radius: 999px;
 }
-.view-link:hover {
+.providers-section .view-link:hover {
   text-decoration: underline;
 }
 
-.book-btn {
+.providers-section .book-btn {
   flex: 1.4;
   text-align: center;
   background: var(--purple-dark);
   color: var(--gold);
-  font-size: 12px;
+  font-size: 13px;
   padding: 11px 0;
   border-radius: 999px;
 }
-.book-btn:hover {
+.providers-section .book-btn:hover {
   background: #52107a;
 }
 
 /* ---------- SMALL SCREENS ---------- */
 @media (max-width: 900px) {
-  .providers-grid {
+  .providers-section .providers-grid {
     grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
   }
 }
 
 @media (max-width: 560px) {
-  .providers-grid {
+  .providers-section .providers-grid {
     grid-template-columns: 1fr; /* 1 column on phones */
   }
 }

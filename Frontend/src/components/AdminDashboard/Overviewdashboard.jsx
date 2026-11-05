@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { adminApi } from "../../services/api";
 import "./Overviewdashboard.css";
 import AdminSidebar from "./AdminSidebar";
@@ -89,6 +90,7 @@ function Donut({ pipeline, loading }) {
 
 export default function OverviewDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -169,13 +171,13 @@ export default function OverviewDashboard() {
       <main className="ov-main">
         <header className="ov-top">
           <input className="ov-search" placeholder="Search anything…" aria-label="Search" />
-          <span className="env">Production · Sri Lanka (GMT+5:30)</span>
-          <div className="ov-user"><span className="avatar">SA</span><div><strong>Super Admin</strong><small>Platform Administrator</small></div></div>
+          <span className="env">MongoDB records</span>
+          <div className="ov-user"><span className="avatar">{user?.username?.charAt(0).toUpperCase() || "A"}</span><div><strong>{user?.username || "Administrator"}</strong><small>Platform Administrator</small></div></div>
         </header>
 
         <section className="ov-head">
           <div>
-            <h1>Welcome back, Admin</h1>
+            <h1>Welcome back, {user?.username || "Administrator"}</h1>
             <p className="lede">Review live marketplace data from the Event Connect database.</p>
           </div>
           <div className="actions">

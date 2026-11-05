@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { serviceApi } from "../../services/api";
+import BrandLogo from "../BrandLogo";
 import "./Myservices.css";
 
 const menu = [
@@ -12,14 +14,21 @@ const menu = [
   { name: "Messages" },
   { name: "Reviews & Ratings" },
   { name: "Subscription & Membership" },
-  { name: "Notifications" },
   { name: "My Profile" },
-  { name: "Help & Support" },
 ];
 
 // ---------- HELPERS ----------
 const lkr = (n) => n.toLocaleString("en-US");
-const statusCss = { Active: "ok", Draft: "gray", Paused: "wait" };
+const statusCss = {
+  Active: "ok",
+  Draft: "wait",
+  Paused: "wait",
+};
+const statusLabel = {
+  Active: "Published",
+  Draft: "Pending Payment",
+  Paused: "Pending Payment",
+};
 const emptyForm = {
   title: "",
   category: "Photography",
@@ -27,14 +36,15 @@ const emptyForm = {
   price: "",
   priceUnit: "Starting Price",
   image: "",
-  status: "Draft",
 };
 
 // ---------- MAIN COMPONENT ----------
 export default function MyServices() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [page, setPage] = useState("My Services");
   const [services, setServices] = useState([]);
+  const [providerStatus, setProviderStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [busyServiceId, setBusyServiceId] = useState("");
@@ -51,9 +61,12 @@ export default function MyServices() {
 
   useEffect(() => {
     let active = true;
-    serviceApi.getMyServices()
-      .then(({ services: currentServices }) => {
-        if (active) setServices(currentServices);
+    Promise.all([serviceApi.getMyServices(), serviceApi.getProviderStatus()])
+      .then(([{ services: currentServices }, currentStatus]) => {
+        if (active) {
+          setServices(currentServices);
+          setProviderStatus(currentStatus);
+        }
       })
       .catch((requestError) => {
         if (active) setError(requestError.message);
@@ -77,7 +90,12 @@ export default function MyServices() {
   // 1) filter  2) sort
   const shown = services
     .filter((s) => category === "All" || s.category === category)
-    .filter((s) => status === "All" || s.status === status)
+    .filter((s) =>
+  status === "All" ||
+  (status === "Pending Payment" &&
+    ["Draft", "Paused"].includes(s.status)) ||
+  (status === "Active" && s.status === "Active")
+)
     .filter((s) => {
       const text = `${s.title} ${s.category} ${s.description || ""}`.toLowerCase();
       return text.includes(search.toLowerCase());
@@ -89,23 +107,18 @@ export default function MyServices() {
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
 
-  function setServiceStatus(id, newStatus) {
-    setError("");
-    setSuccess("");
-    setBusyServiceId(id);
-    serviceApi.update(id, { status: newStatus })
-      .then(async () => {
-        setSuccess("Service status updated successfully.");
-        try {
-          const { services: refreshedServices } = await serviceApi.getMyServices();
-          setServices(refreshedServices);
-        } catch (refreshError) {
-          setError(`Service was updated, but the list could not be refreshed: ${refreshError.message}`);
-        }
-      })
-      .catch((requestError) => setError(requestError.message))
-      .finally(() => setBusyServiceId(""));
-  }
+  function setServiceStatus(service) {
+  setError("");
+  setSuccess("");
+
+  navigate("/payment", {
+    state: {
+      source: "publish-service",
+      serviceId: service._id,
+      providerId: user?.id,
+    },
+  });
+}
 
   function startEditing(service) {
     setEditingService(service);
@@ -116,7 +129,6 @@ export default function MyServices() {
       price: String(service.price),
       priceUnit: service.priceUnit || "Starting Price",
       image: service.image || "",
-      status: service.status || "Draft",
     });
     setShowForm(true);
   }
@@ -154,7 +166,7 @@ export default function MyServices() {
       price: Number(form.price),
       priceUnit: form.priceUnit.trim() || "Starting Price",
       image: form.image.trim(),
-      status: form.status,
+      status: undefined,
     };
 
     try {
@@ -163,8 +175,12 @@ export default function MyServices() {
         setSuccess("Service updated successfully.");
         cancelForm();
         try {
-          const { services: refreshedServices } = await serviceApi.getMyServices();
+          const [{ services: refreshedServices }, currentStatus] = await Promise.all([
+            serviceApi.getMyServices(),
+            serviceApi.getProviderStatus(),
+          ]);
           setServices(refreshedServices);
+          setProviderStatus(currentStatus);
         } catch (refreshError) {
           setError(`Service was updated, but the list could not be refreshed: ${refreshError.message}`);
         }
@@ -174,8 +190,12 @@ export default function MyServices() {
         cancelForm();
         setSuccess("Service created successfully.");
         try {
-          const { services: refreshedServices } = await serviceApi.getMyServices();
+          const [{ services: refreshedServices }, currentStatus] = await Promise.all([
+            serviceApi.getMyServices(),
+            serviceApi.getProviderStatus(),
+          ]);
           setServices(refreshedServices);
+          setProviderStatus(currentStatus);
         } catch (refreshError) {
           setError(`Service was created, but the list could not be refreshed: ${refreshError.message}`);
         }
@@ -197,8 +217,12 @@ export default function MyServices() {
       if (editingService?._id === id) cancelForm();
       setSuccess("Service deleted successfully.");
       try {
-        const { services: refreshedServices } = await serviceApi.getMyServices();
+        const [{ services: refreshedServices }, currentStatus] = await Promise.all([
+          serviceApi.getMyServices(),
+          serviceApi.getProviderStatus(),
+        ]);
         setServices(refreshedServices);
+        setProviderStatus(currentStatus);
       } catch (refreshError) {
         setError(`Service was deleted, but the list could not be refreshed: ${refreshError.message}`);
       }
@@ -237,7 +261,7 @@ export default function MyServices() {
       {/* ================= SIDEBAR ================= */}
       <aside className="ms-side">
         <div className="ms-brand">
-          <span className="ms-logo">✦</span>
+          <BrandLogo className="ms-logo" />
           <div><strong>Event Connect</strong><small>YOUR EVENT, PERFECTLY PLANNED</small></div>
         </div>
 
@@ -282,16 +306,33 @@ export default function MyServices() {
             </div>
             <div className="ms-title-buttons">
               <button className="ms-btn white" onClick={exportCatalog}>⬇ Export Catalog</button>
-              <button className="ms-btn dark" onClick={() => {
-                if (showForm) cancelForm();
-                else {
-                  setEditingService(null);
-                  setForm(emptyForm);
-                  setShowForm(true);
-                }
-              }}>+ Add New Service</button>
+              <button
+                className="ms-btn dark"
+                disabled={!showForm && (!editingService && (!providerStatus || providerStatus.serviceCount >= providerStatus.maxServiceCount))}
+                onClick={() => {
+                  if (showForm) cancelForm();
+                  else {
+                    setEditingService(null);
+                    setForm(emptyForm);
+                    setShowForm(true);
+                  }
+                }}
+              >
+                {showForm ? "Cancel" : "+ Add New Service"}
+              </button>
             </div>
           </div>
+          {providerStatus && (
+            <p className="ms-service-quota" role="status">
+              Services added: {providerStatus.serviceCount} / {providerStatus.freeServiceLimit}
+              {" · "}Remaining free services: {providerStatus.remainingFreeServices}
+              {providerStatus.serviceCount >= providerStatus.maxServiceCount && (
+                <> · {providerStatus.maxServiceCount === providerStatus.freeServiceLimit
+                  ? "You have reached your free service limit (5/5)."
+                  : "You have reached the service limit configured for your subscription plan."}</>
+              )}
+            </p>
+          )}
 
           {/* ----- Quick add form ----- */}
           {showForm && (
@@ -304,9 +345,6 @@ export default function MyServices() {
               <input type="number" min="0" placeholder="Starting price (LKR)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
               <input placeholder="Price unit" value={form.priceUnit} onChange={(e) => setForm({ ...form, priceUnit: e.target.value })} />
               <input type="url" placeholder="Image URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
-              <select aria-label="Service status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                {["Active", "Draft", "Paused"].map((item) => <option key={item}>{item}</option>)}
-              </select>
               <button className="ms-btn dark" type="submit" disabled={saving}>{saving ? "Saving..." : editingService ? "Update Service" : "Save as Draft"}</button>
               {editingService && <button className="ms-btn light" type="button" onClick={cancelForm}>Cancel</button>}
             </form>
@@ -333,9 +371,13 @@ export default function MyServices() {
               <option value="All">All Categories ({categories.length})</option>
               {categories.map((c) => <option key={c}>{c}</option>)}
             </select>
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
               <option value="All">All Statuses</option>
-              <option>Active</option><option>Draft</option><option>Paused</option>
+              <option value="Active">Published</option>
+              <option value="Pending Payment">Pending Payment</option>
             </select>
             <select value={sort} onChange={(e) => setSort(e.target.value)}>
               {["Newest", "Top Rated", "Price: Low to High", "Price: High to Low"].map((option) => (
@@ -364,7 +406,9 @@ export default function MyServices() {
                 <div className="ms-service-img" style={s.image ? { backgroundImage: `url(${s.image})` } : {}}>
                   <div className="ms-chips">
                     <span className="ms-chip dark">{s.category.toUpperCase()}</span>
-                    <span className={`ms-chip ${statusCss[s.status]}`}>● {s.status}</span>
+                    <span className={`ms-chip ${statusCss[s.status]}`}>
+                       {statusLabel[s.status] || s.status}
+                    </span>
                   </div>
                   <div className="ms-img-bottom">
                     <span className="ms-chip dark">{s.rating ? `★ ${s.rating}` : "Not yet rated"}</span>
@@ -380,8 +424,15 @@ export default function MyServices() {
                     <div><b>LKR {lkr(s.price)}</b><small>{s.priceUnit || "Starting price"}</small></div>
                   </div>
                   <div className="ms-actions">
-                    {s.status === "Draft" && <button className="ms-btn gold small" disabled={busyServiceId === s._id} onClick={() => setServiceStatus(s._id, "Active")}>⬆ Publish</button>}
-                    {s.status === "Paused" && <button className="ms-btn outline small" disabled={busyServiceId === s._id} onClick={() => setServiceStatus(s._id, "Active")}>Activate</button>}
+                    {s.status !== "Active" && (
+                      <button
+                        className="ms-btn gold small"
+                        onClick={() => setServiceStatus(s)}
+                      >
+                        ⬆ Publish
+                      </button>
+                    )}
+                        
                     {s.status === "Active" && (
                       <button className="ms-btn light small" disabled={busyServiceId === s._id} onClick={() => setServiceStatus(s._id, "Paused")}>Pause</button>
                     )}

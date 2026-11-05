@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { adminApi } from "../../services/api";
 import "./ProviderManagement.css";
 import AdminSidebar from "./AdminSidebar";
@@ -18,6 +19,7 @@ function formatDate(value) {
 }
 
 function ProviderManagement() {
+  const { user } = useAuth();
   const [providers, setProviders] = useState([]);
   const [selectedProviderId, setSelectedProviderId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -140,12 +142,12 @@ function ProviderManagement() {
           </div>
           <div className="provider-system-status">
             <span className="provider-online-dot"></span>
-            Production System
+            MongoDB records
           </div>
           <button className="provider-notification" type="button" aria-label="Notifications">♧</button>
           <div className="provider-admin-profile">
-            <div className="provider-admin-avatar">DS</div>
-            <div><strong>Super Admin</strong><small>Platform Administrator</small></div>
+            <div className="provider-admin-avatar">{user?.username?.charAt(0).toUpperCase() || "A"}</div>
+            <div><strong>{user?.username || "Administrator"}</strong><small>Platform Administrator</small></div>
           </div>
         </header>
 

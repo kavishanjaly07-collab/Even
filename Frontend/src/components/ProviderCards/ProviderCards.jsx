@@ -173,7 +173,7 @@ function ProviderCard({
 
         <div className="button-row">
           <a href="#" className="view-link">View Profile</a>
-          <Link to="/payment" className="book-btn">Book Now</Link>
+          <Link to="/BrowseServices" className="book-btn">Book Now</Link>
         </div>
       </div>
     </article>

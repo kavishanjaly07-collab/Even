@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { adminApi } from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 import "./UserManagement.css";
 import AdminSidebar from "./AdminSidebar";
@@ -32,9 +33,8 @@ function mapUser(user, index) {
         })
       : "Not available",
     createdAt: hasValidDate ? createdAt : null,
-    // The current User model has no suspension field; existing accounts are active.
-    status: user.status === "Suspended" ? "Suspended" : user.status === "Active" || !user.status
-      ? "Active"
+    status: typeof user.status === "string" && user.status.trim()
+      ? user.status
       : "Not available",
     phone: user.phone || "Not available",
     address: "Not available",
@@ -44,6 +44,7 @@ function mapUser(user, index) {
 }
 
 function UserManagement() {
+  const { user: adminUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -156,6 +157,7 @@ function UserManagement() {
   };
 
   const totalUsers = users.length;
+  const hasStatusData = users.some((user) => user.status !== "Not available");
   const activeUsers = users.filter(
     (user) => user.status === "Active"
   ).length;
@@ -168,6 +170,7 @@ function UserManagement() {
     user.createdAt.getFullYear() === now.getFullYear() &&
     user.createdAt.getMonth() === now.getMonth()
   ).length;
+  const availableStatuses = [...new Set(users.map((user) => user.status))];
 
   return (
     <div className="admin-dashboard">
@@ -186,15 +189,15 @@ function UserManagement() {
 
           <div className="system-status">
             <span className="online-dot"></span>
-            Production System
+            MongoDB records
           </div>
 
           <button className="notification-btn">♧</button>
 
           <div className="admin-profile">
-            <div className="profile-avatar">DS</div>
+            <div className="profile-avatar">{adminUser?.username?.charAt(0).toUpperCase() || "A"}</div>
             <div>
-              <strong>Super Admin</strong>
+              <strong>{adminUser?.username || "Administrator"}</strong>
               <small>Platform Administrator</small>
             </div>
           </div>
@@ -246,8 +249,8 @@ function UserManagement() {
               <span>ACTIVE USERS</span>
               <div className="stat-icon green">♧</div>
             </div>
-            <h2>{loading ? "—" : activeUsers.toLocaleString()}</h2>
-            <p className="stat-positive">↗ Active accounts</p>
+            <h2>{loading ? "—" : hasStatusData ? activeUsers.toLocaleString() : "Not available"}</h2>
+            <p className="stat-positive">{hasStatusData ? "Active accounts" : "Account status is not stored"}</p>
             <div className="stat-progress green-progress"></div>
           </div>
 
@@ -266,8 +269,8 @@ function UserManagement() {
               <span>SUSPENDED / FLAGGED</span>
               <div className="stat-icon red">⚑</div>
             </div>
-            <h2 className="red-number">{loading ? "—" : suspendedUsers.toLocaleString()}</h2>
-            <p className="stat-negative">Account restrictions</p>
+            <h2 className="red-number">{loading ? "—" : hasStatusData ? suspendedUsers.toLocaleString() : "Not available"}</h2>
+            <p className="stat-negative">{hasStatusData ? "Account restrictions" : "Account status is not stored"}</p>
             <div className="stat-progress red-progress"></div>
           </div>
 
@@ -303,8 +306,7 @@ function UserManagement() {
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <option>All Statuses</option>
-              <option>Active</option>
-              <option>Suspended</option>
+              {availableStatuses.map((status) => <option key={status}>{status}</option>)}
             </select>
 
             <button

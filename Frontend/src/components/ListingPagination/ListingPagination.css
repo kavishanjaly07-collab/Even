@@ -19,31 +19,31 @@
 }
 
 /* ---------- ESCROW NOTE (left) ---------- */
-.escrow-note {
+.listing-footer .escrow-note {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
+  font-size: 13px;
   color: #555;
 }
 
-.escrow-note strong {
+.listing-footer .escrow-note strong {
   color: var(--gold-text);
   font-weight: 600;
 }
 
-.escrow-note .dot {
-  font-size: 10px;
+.listing-footer .escrow-note .dot {
+  font-size: 13px;
 }
 
 /* ---------- PAGINATION (right) ---------- */
-.pagination {
+.listing-footer .pagination {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.page-btn {
+.listing-footer .page-btn {
   width: 32px;
   height: 32px;
   border: none;
@@ -51,36 +51,36 @@
   background: #fff;
   color: #2b2b2b;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   transition: background 0.2s;
 }
 
-.page-btn:hover:not(:disabled):not(.active) {
+.listing-footer .page-btn:hover:not(:disabled):not(.active) {
   background: #ece9f2;
 }
 
 /* The current page */
-.page-btn.active {
+.listing-footer .page-btn.active {
   background: var(--purple-dark);
   color: #fff;
 }
 
 /* Previous button on page 1, next button on the last page */
-.page-btn:disabled {
+.listing-footer .page-btn:disabled {
   color: #bbb;
   cursor: not-allowed;
   box-shadow: none;
 }
 
-.page-btn.arrow {
+.listing-footer .page-btn.arrow {
   font-size: 16px;
 }
 
-.dots {
+.listing-footer .dots {
   color: #999;
-  font-size: 12px;
+  font-size: 13px;
   padding: 0 4px;
 }
 

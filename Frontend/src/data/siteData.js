@@ -1,8 +1,6 @@
 // Content lives here, so you can change text without touching components.
 
-export const portalTabs = ["Customer Portal", "Provider Hub", "Admin Suite"];
-
-export const navLinks = ["Services", "Providers", "How It Works", "Categories"];
+export const navLinks = ["Services", "How It Works", "Categories"];
 
 export const serviceCategories = [
   "Select Experience",
