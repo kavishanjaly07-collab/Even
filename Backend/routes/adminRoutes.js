@@ -9,6 +9,7 @@ import {
   getAdminServices,
   getAllUsers,
   getOverview,
+  getPlatformSettingsStatus,
   getProviders,
   getServiceCategoryStats,
   updateAdminService,
@@ -24,6 +25,7 @@ router.get("/payments", protect, allowRoles("admin"), getAdminPayments);
 router.get("/services", protect, allowRoles("admin"), getAdminServices);
 router.get("/categories", protect, allowRoles("admin"), getAdminCategories);
 router.get("/service-category/stats", protect, allowRoles("admin"), getServiceCategoryStats);
+router.get("/settings", protect, allowRoles("admin"), getPlatformSettingsStatus);
 router.post("/services", protect, allowRoles("admin"), createAdminService);
 router.put("/services/:id", protect, allowRoles("admin"), updateAdminService);
 router.delete("/services/:id", protect, allowRoles("admin"), deleteAdminService);

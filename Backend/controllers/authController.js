@@ -100,11 +100,12 @@ export const register = async (req, res) => {
 // LOGIN
 export const login = async (req, res) => {
   try {
-    const { username, password, requiredRole } = req.body || {};
+    const { username, email, password, requiredRole } = req.body || {};
+    const identifier = (email || username || "").trim();
 
-    if (!username || !password) {
+    if (!identifier || !password) {
       return res.status(400).json({
-        message: "Username and password are required.",
+        message: "Email or username and password are required.",
       });
     }
 
@@ -116,7 +117,10 @@ export const login = async (req, res) => {
 
     // Find user
     const user = await User.findOne({
-      username: username.trim(),
+      $or: [
+        { username: identifier },
+        { email: identifier.toLowerCase() },
+      ],
     });
 
     if (!user) {

@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema(
       enum: ["customer", "provider", "admin"],
       default: "customer",
     },
+
+    vendorPaymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+    },
   },
   {
     timestamps: true,

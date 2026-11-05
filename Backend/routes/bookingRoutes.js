@@ -7,10 +7,7 @@ import {
   updateBookingStatus,
 } from "../controllers/bookingController.js";
 
-import {
-  protect,
-  allowRoles,
-} from "../middleware/authMiddleware.js";
+import { protect, allowRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

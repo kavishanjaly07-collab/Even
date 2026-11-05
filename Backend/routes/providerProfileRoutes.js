@@ -7,17 +7,14 @@ import {
   updateProviderProfile,
 } from "../controllers/providerProfileController.js";
 
-import {
-  protect,
-  allowRoles,
-} from "../middleware/authMiddleware.js";
+import { protect, allowRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Only authenticated providers can access these routes
 router.use(protect, allowRoles("provider"));
 
-// Create Provider Profile
+// Registration creates a provider profile before redirecting to the dashboard.
 router.post("/", createProviderProfile);
 
 // Get My Provider Profile

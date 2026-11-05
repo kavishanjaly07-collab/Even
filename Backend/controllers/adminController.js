@@ -20,6 +20,15 @@ const serviceStatuses = ["Active", "Draft", "Paused"];
 const serviceStringFields = ["title", "category", "description", "priceUnit", "image"];
 const bookingStatuses = ["Pending", "Accepted", "Rejected"];
 
+export const getPlatformSettingsStatus = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    available: false,
+    settings: null,
+    message: "No database-backed platform settings are configured.",
+  });
+};
+
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 function validateServiceInput(body, { creating = false } = {}) {
