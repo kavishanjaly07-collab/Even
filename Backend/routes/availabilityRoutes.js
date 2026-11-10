@@ -6,7 +6,8 @@ import {
   createAvailability,
   deleteAvailability,
   checkProviderAvailability,
-} from "../controllers/availabilityController.js";
+} 
+from "../controllers/AvailabilityController.js";
 
 import { protect, allowRoles } from "../middleware/authMiddleware.js";
 

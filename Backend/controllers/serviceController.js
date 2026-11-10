@@ -92,6 +92,7 @@ export const getPublicServices = async (req, res) => {
 
       return {
         ...publicService,
+        providerId: provider?._id.toString() || null,
         provider: profile
           ? {
               businessName: profile.businessName,

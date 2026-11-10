@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { bookingApi, serviceApi } from "../../services/api";
+import { availabilityApi, bookingApi, serviceApi } from "../../services/api";
 import "./BrowseServices.css";
 import "./EventConnectBookings.css";
 import ClientSidebar from "./ClientSidebar";
 
 const categoryIcon = (category) => {
-  const value = category.toLowerCase();
+  const value = (category || "").toLowerCase();
   if (value.includes("photo")) return "📸";
   if (value.includes("decor") || value.includes("flower")) return "💐";
   if (value.includes("cater")) return "🍽️";
@@ -17,15 +17,32 @@ const categoryIcon = (category) => {
   return "✦";
 };
 
+const normalizeCategory = (category) =>
+  (category || "").trim().toLowerCase().replace(/[\s&]+/g, "");
+
+const normalizeText = (value) => (value || "").trim().toLowerCase();
+
 export default function BrowseServices() {
   const navigate = useNavigate();
-  const { user, clearSession } = useAuth();
+  const routeLocation = useLocation();
+
+  const searchParams = new URLSearchParams(routeLocation.search);
+
+  const initialCategory = searchParams.get("category") || "All";
+  const initialCity = searchParams.get("city") || "";
+  const initialDate = searchParams.get("date") || "";
+  const initialGuests = searchParams.get("guests") || "";
+  const { user, loading: authLoading, clearSession } = useAuth();
   const [services, setServices] = useState([]);
+  const [activeServiceCount, setActiveServiceCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [search, setSearch] = useState(initialCity);
+  const [cityFilter, setCityFilter] = useState(initialCity);
+  const [eventDate, setEventDate] = useState(initialDate);
+  const [guestCount, setGuestCount] = useState(initialGuests);
   const [sortBy, setSortBy] = useState("Recommended");
   const [favorites, setFavorites] = useState([]);
   const [notice, setNotice] = useState("");
@@ -39,16 +56,53 @@ export default function BrowseServices() {
   const [bookingError, setBookingError] = useState("");
 
   useEffect(() => {
+    const params = new URLSearchParams(routeLocation.search);
+    const category = params.get("category") || "All";
+    const city = params.get("city") || "";
+    setActiveCategory(
+      normalizeCategory(category) === "selectexperience" ? "All" : category
+    );
+    setSearch(city);
+    setCityFilter(city);
+    setEventDate(params.get("date") || "");
+    setGuestCount(params.get("guests") || "");
+  }, [routeLocation.search]);
+
+  useEffect(() => {
     let active = true;
     setLoading(true);
     setLoadError("");
 
     serviceApi.getPublicServices()
-      .then(({ services: currentServices }) => {
+      .then(async ({ services: currentServices }) => {
         if (!Array.isArray(currentServices)) {
           throw new Error("The service directory returned an invalid response.");
         }
-        if (active) setServices(currentServices);
+
+        let activeServices = currentServices.filter(
+          (service) => normalizeText(service.status) === "active"
+        );
+        if (active) setActiveServiceCount(activeServices.length);
+
+        if (eventDate) {
+          const providerIds = [...new Set(
+            activeServices.map((service) => service.providerId).filter(Boolean)
+          )];
+          const availabilityByProvider = new Map(
+            await Promise.all(providerIds.map(async (providerId) => {
+              const availability = await availabilityApi.checkProviderAvailability({
+                providerId,
+                date: eventDate,
+              });
+              return [providerId, availability.available === true];
+            }))
+          );
+          activeServices = activeServices.filter(
+            (service) => availabilityByProvider.get(service.providerId) === true
+          );
+        }
+
+        if (active) setServices(activeServices);
       })
       .catch((requestError) => {
         if (active) setLoadError(requestError.message);
@@ -60,31 +114,51 @@ export default function BrowseServices() {
     return () => {
       active = false;
     };
-  }, [refreshKey]);
+  }, [eventDate, refreshKey]);
 
   const filteredServices = useMemo(() => {
     let result = services.filter((service) => {
-      const inCategory = activeCategory === "All" || activeCategory === service.category;
-      const query = search.trim().toLowerCase();
+      const inCategory =
+        activeCategory === "All" ||
+        normalizeCategory(service.category) === normalizeCategory(activeCategory);
+
+      const query = normalizeText(search);
+      const locationQuery = normalizeText(cityFilter);
+      const locations = [
+        service.provider?.location,
+        service.location,
+      ].map(normalizeText);
+      const matchesCity =
+        !locationQuery || locations.some((location) => location.includes(locationQuery));
       const matchesSearch =
         !query ||
-        service.title.toLowerCase().includes(query) ||
-        service.category.toLowerCase().includes(query) ||
+        (service.title || "").toLowerCase().includes(query) ||
+        (service.category || "").toLowerCase().includes(query) ||
         (service.description || "").toLowerCase().includes(query) ||
-        (service.provider?.businessName || "").toLowerCase().includes(query);
-      return inCategory && matchesSearch;
-    });
+        (service.provider?.businessName || "").toLowerCase().includes(query) ||
+        locations.some((location) => location.includes(query));
 
+      return inCategory && matchesCity && matchesSearch;
+    });
     if (sortBy === "Price: low to high") result = [...result].sort((a, b) => a.price - b.price);
     if (sortBy === "Price: high to low") result = [...result].sort((a, b) => b.price - a.price);
     return result;
-  }, [services, activeCategory, search, sortBy]);
-  const categories = useMemo(
-    () => [...new Set(services.map((service) => service.category).filter(Boolean))]
+  }, [services, activeCategory, cityFilter, search, sortBy]);
+  const categories = useMemo(() => {
+    const namesByNormalizedCategory = new Map();
+    services.forEach(({ category }) => {
+      if (category && !namesByNormalizedCategory.has(normalizeCategory(category))) {
+        namesByNormalizedCategory.set(normalizeCategory(category), category.trim());
+      }
+    });
+
+    return [...namesByNormalizedCategory.values()]
       .sort((left, right) => left.localeCompare(right))
-      .map((name) => ({ name, icon: categoryIcon(name) })),
-    [services]
-  );
+      .map((name) => ({ name, icon: categoryIcon(name) }));
+  }, [services]);
+  const selectedCategory = categories.find(
+    (category) => normalizeCategory(category.name) === normalizeCategory(activeCategory)
+  )?.name || activeCategory;
 
   const toggleFavorite = (id) => {
     setFavorites((current) =>
@@ -97,11 +171,51 @@ export default function BrowseServices() {
     window.setTimeout(() => setNotice(""), 2800);
   };
 
-  function openBookingForm(service) {
-    setSelectedService(service);
-    setBookingForm({ eventDate: "", location: "", additionalRequirements: "" });
-    setBookingError("");
+async function openBookingForm(service) {
+  if (authLoading) {
+    handleAction("Please wait while we check your account.");
+    return;
   }
+  if (!user) {
+    navigate("/login", {
+      state: { from: `${routeLocation.pathname}${routeLocation.search}` },
+    });
+    return;
+  }
+  if (user.role !== "customer") {
+    handleAction("Only customer accounts can submit booking requests.");
+    return;
+  }
+
+  try {
+    setBookingError("");
+
+    const usage = await bookingApi.getUsage();
+
+    if (usage.paymentRequired) {
+      navigate("/client-payment", {
+        state: {
+          source: "client-booking-limit",
+          serviceId: service._id,
+          serviceTitle: service.title,
+          totalBookings: usage.totalBookings,
+        },
+      });
+      return;
+    }
+
+    setSelectedService(service);
+setBookingForm({
+  eventDate,
+  location: cityFilter,
+  additionalRequirements: guestCount
+    ? `Guest Count: ${guestCount}`
+    : "",
+});
+  } catch (error) {
+    setBookingError(error.message);
+  }
+}
 
   async function submitBooking(event) {
     event.preventDefault();
@@ -142,7 +256,10 @@ export default function BrowseServices() {
               aria-label="Search services"
               placeholder="Search services, verified vendors, cakes, catering..."
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                if (event.target.value !== initialCity) setCityFilter("");
+              }}
             />
             <kbd>⌘ K</kbd>
           </div>
@@ -165,7 +282,13 @@ export default function BrowseServices() {
           </div>
           <div className="intro-right">
             <span className="online-count">
-              {loading ? "Loading available services..." : loadError ? "Service directory unavailable" : `${services.length} active services`}
+              {loading
+                ? "Loading available services..."
+                : loadError
+                  ? "Service directory unavailable"
+                  : eventDate
+                    ? `${services.length} services available on selected date`
+                    : `${activeServiceCount} active services`}
             </span>
           </div>
           <div className="discovery-search">
@@ -173,13 +296,19 @@ export default function BrowseServices() {
             <input
               placeholder="Search by vendor name, service, or keyword (e.g. Vintage Photobooth, Vegan Catering, Silk...)"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                if (event.target.value !== initialCity) setCityFilter("");
+              }}
             />
             <button onClick={() => document.querySelector(".services-grid")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Discover <span>→</span></button>
           </div>
           <div className="filter-row">
-            <select className="filter-chip" value={activeCategory} onChange={(event) => setActiveCategory(event.target.value)} aria-label="Filter by service category">
+            <select className="filter-chip" value={selectedCategory} onChange={(event) => setActiveCategory(event.target.value)} aria-label="Filter by service category">
               <option value="All">All Categories</option>
+              {activeCategory !== "All" &&
+                !categories.some((category) => normalizeCategory(category.name) === normalizeCategory(activeCategory)) &&
+                <option value={activeCategory}>{activeCategory}</option>}
               {categories.map((category) => <option key={category.name} value={category.name}>{category.name}</option>)}
             </select>
             <select className="filter-chip" value={sortBy} onChange={(event) => setSortBy(event.target.value)} aria-label="Sort services">
@@ -188,7 +317,11 @@ export default function BrowseServices() {
               <option>Price: high to low</option>
             </select>
           </div>
-          <div className="filter-footnote"><span>Reset</span><span>Sorted by: <b>{sortBy}</b></span></div>
+          <div className="filter-footnote">
+            <span>Reset</span>
+            <span>Sorted by: <b>{sortBy}</b></span>
+            {guestCount && <span role="note">Guest count is saved for your booking request; provider capacity is not available for filtering yet.</span>}
+          </div>
         </section>
 
         <section className="category-section">
@@ -200,12 +333,12 @@ export default function BrowseServices() {
             {categories.map((category) => (
               <button
                 key={category.name}
-                className={`category-card ${activeCategory === category.name ? "chosen" : ""}`}
-                onClick={() => setActiveCategory(activeCategory === category.name ? "All" : category.name)}
+                className={`category-card ${normalizeCategory(activeCategory) === normalizeCategory(category.name) ? "chosen" : ""}`}
+                onClick={() => setActiveCategory(normalizeCategory(activeCategory) === normalizeCategory(category.name) ? "All" : category.name)}
               >
                 <span className="category-icon">{category.icon}</span>
                 <strong>{category.name}</strong>
-                <small>{services.filter((service) => service.category === category.name).length} Services</small>
+                <small>{services.filter((service) => normalizeCategory(service.category) === normalizeCategory(category.name)).length} Services</small>
               </button>
             ))}
           </div>
@@ -258,7 +391,9 @@ export default function BrowseServices() {
                     <p className="service-description">{service.description || "No description provided."}</p>
                     <div className="service-price-row">
                       <div><small>{service.priceUnit || "Unit not specified"}</small><strong>{service.price === undefined ? "Price not available" : `LKR ${Number(service.price).toLocaleString()}`}</strong></div>
-                      <div className="availability">Availability not configured</div>
+                      <div className="availability">
+                        {eventDate ? "Available on selected date" : "Select a date to check availability"}
+                      </div>
                     </div>
                     <div className="service-actions">
                       <button className="primary-button" onClick={() => openBookingForm(service)}>Book Now</button>
@@ -270,9 +405,12 @@ export default function BrowseServices() {
           ) : (
             <div className="empty-state">
               <span>⌕</span>
-              <h3>{services.length ? "No services match your filters" : "No active services are available"}</h3>
-              <p>{services.length ? "Try changing your search or filters to find available services." : "Check back soon as providers add services to the directory."}</p>
-              <button className="primary-button" onClick={() => { setSearch(""); setActiveCategory("All"); setSortBy("Recommended"); }}>Clear filters</button>
+              <h3>{activeServiceCount ? "No services match your filters" : "No active services are available"}</h3>
+              <p>{activeServiceCount ? "Try changing your search, date, or filters to find available services." : "Check back soon as providers add services to the directory."}</p>
+              <button className="primary-button" onClick={() => {
+                navigate("/BrowseServices", { replace: true });
+                setSortBy("Recommended");
+              }}>Clear filters</button>
             </div>
           )}
           <div className="pagination">

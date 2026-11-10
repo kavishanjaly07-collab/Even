@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { authApi } from "../../services/api";
 import BrandLogo from "../BrandLogo";
@@ -13,6 +13,7 @@ const dashboardPaths = {
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { authError, loading, setSession } = useAuth();
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [message, setMessage] = useState("");
@@ -46,7 +47,15 @@ export default function Login() {
       }
 
       setSession(session);
-      navigate(destination, { replace: true });
+      const returnTo = location.state?.from;
+      const nextDestination =
+        session.user.role === "customer" &&
+        typeof returnTo === "string" &&
+        returnTo.startsWith("/") &&
+        !returnTo.startsWith("//")
+          ? returnTo
+          : destination;
+      navigate(nextDestination, { replace: true });
     } catch (error) {
       setMessage(error.message);
     } finally {

@@ -81,10 +81,22 @@ export const serviceApi = {
   remove: (id) => request(`/api/services/${encodeURIComponent(id)}`, { method: "DELETE" }),
 };
 
+export const availabilityApi = {
+  checkProviderAvailability: ({ providerId, date }) => {
+    const params = new URLSearchParams({ providerId, date });
+    return request(`/api/availability/check?${params.toString()}`, { authenticated: false });
+  },
+};
+
 export const bookingApi = {
   create: (booking) => request("/api/bookings", { method: "POST", body: booking }),
+
   getMyBookings: () => get("/api/bookings/my-bookings"),
+
+  getUsage: () => get("/api/bookings/usage"),
+
   getProviderRequests: () => get("/api/bookings/provider-requests"),
+
   updateStatus: (id, status) => request(`/api/bookings/${encodeURIComponent(id)}/status`, {
     method: "PATCH",
     body: { status },

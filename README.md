@@ -123,10 +123,6 @@ Administrators can:
 - GitHub
 - Figma
 
-### Deployment
-- Vercel (Frontend)
-- Render (Backend)
-- MongoDB Atlas (Cloud Database)
 
 ## 🏗️ Project Architecture
 

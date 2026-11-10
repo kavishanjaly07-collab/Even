@@ -45,7 +45,10 @@ function App() {
 />
       {/* Customer Dashboard */}
       <Route path="/CustomerHome" element={<ProtectedRoute role="customer"><Customerhome /></ProtectedRoute>} />
-      <Route path="/BrowseServices" element={<ProtectedRoute role="customer"><BrowseServices /></ProtectedRoute>} />
+<Route
+  path="/BrowseServices"
+  element={<BrowseServices />}
+/>
       <Route path="/MyBookings" element={<ProtectedRoute role="customer"><EventConnectBookings /></ProtectedRoute>} />
       <Route path="/Messages" element={<ProtectedRoute role="customer"><EventConnectMessages /></ProtectedRoute>} />
       <Route path="/MyProfile" element={<ProtectedRoute role="customer"><ProfileSettings /></ProtectedRoute>} />

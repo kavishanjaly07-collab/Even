@@ -1,99 +1,133 @@
+
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { serviceApi } from "../../services/api";
 import "./PopularServices.css";
 
-// ---------- DATA ----------
-// Put your photos in the "public/services" folder with these names,
-// or change the "image" paths below.
-const services = [
-  {
-    image: "/services/videography.jpg",
-    rating: "4.98",
-    reviews: 94,
-    title: "Cinematic 4K Wedding Videography",
-    text: "Dual master cameras, drone aerials & 8-min cinematic feature.",
-    priceLabel: "Starting at",
-    price: "From Rs.25000",
-  },
-  {
-    image: "/services/floral-arch.jpg",
-    rating: "4.95",
-    reviews: 112,
-    title: "Royal Floral Arch & Stage Décor",
-    text: "Fresh botanical installations, ambient stage glow, and aisle styling.",
-    priceLabel: "Starting at",
-    price: "From Rs.12000",
-  },
-  {
-    image: "/services/banquet.jpg",
-    rating: "5.0",
-    reviews: 68,
-    title: "Gourmet Multi-Course Banquet",
-    text: "Artisanal plated culinary service with custom dietary sommelier pairings.",
-    priceLabel: "Per Person",
-    price: "From Rs.3500",
-  },
-  {
-    image: "/services/dj.jpg",
-    rating: "4.92",
-    reviews: 145,
-    title: "Live Acoustic Duo & DJ Package",
-    text: "Full sound staging, wireless mics, cocktail set & late night club energy.",
-    priceLabel: "Starting at",
-    price: "From Rs.10000",
-  },
-];
+function ServiceCard({ service }) {
+  const price = Number(service.price);
 
-// ---------- SMALL COMPONENT ----------
-// One service card
-function ServiceCard({ image, rating, reviews, title, text, priceLabel, price }) {
   return (
     <article className="service-card">
-      {/* Photo with the rating and "Verified Pro" on top */}
-      <div className="service-image" style={{ backgroundImage: `url(${image})` }}>
-        <span className="rating">
-          <span className="star">★</span> {rating} <small>({reviews})</small>
-        </span>
+      <div
+        className="service-image"
+        style={
+          service.image
+            ? { backgroundImage: `url(${service.image})` }
+            : undefined
+        }
+      >
         <span className="verified">
-          <span className="check">✔</span> Verified Pro
+          <span className="check">✔</span> Active Service
         </span>
       </div>
 
-      {/* Text part */}
       <div className="service-body">
-        <h3>{title}</h3>
-        <p>{text}</p>
+        <h3>{service.title}</h3>
+
+        <p>
+          {service.description || "No description available."}
+        </p>
 
         <div className="service-footer">
           <div>
-            <span className="price-label">{priceLabel}</span>
-            <strong className="price">{price}</strong>
+            <span className="price-label">
+              {service.priceUnit || "Starting Price"}
+            </span>
+
+            <strong className="price">
+              {Number.isFinite(price)
+                ? `LKR ${price.toLocaleString()}`
+                : "Price not available"}
+            </strong>
           </div>
-          <Link to="/BrowseServices" className="book-btn">Book Now</Link>
+
+          <Link to="/BrowseServices" className="book-btn">
+            Book Now
+          </Link>
         </div>
       </div>
     </article>
   );
 }
 
-// ---------- MAIN COMPONENT ----------
 export default function PopularServices() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadServices() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await serviceApi.getPublicServices();
+
+        if (!Array.isArray(response.services)) {
+          throw new Error("Invalid services response from backend.");
+        }
+
+        if (active) {
+          setServices(response.services.slice(0, 4));
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.message || "Unable to load services.");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadServices();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section id="popular-services" className="popular-section">
       <div className="popular-inner">
+
         <div className="popular-heading">
           <span className="eyebrow">IN HIGH DEMAND</span>
+
           <h2>Popular Celebration Services</h2>
+
           <p>
             Book top-rated, meticulously reviewed experiences configured for
             flawless milestone celebrations.
           </p>
         </div>
 
-        <div className="service-grid">
-          {services.map((item) => (
-            <ServiceCard key={item.title} {...item} />
-          ))}
-        </div>
+        {loading ? (
+          <p>Loading services...</p>
+        ) : error ? (
+          <div role="alert">
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()}>
+              Try Again
+            </button>
+          </div>
+        ) : services.length > 0 ? (
+          <div className="service-grid">
+            {services.map((service) => (
+              <ServiceCard
+                key={service._id}
+                service={service}
+              />
+            ))}
+          </div>
+        ) : (
+          <p>No active services available yet.</p>
+        )}
+
       </div>
     </section>
   );
