@@ -6,8 +6,17 @@ import BrandLogo from "../BrandLogo";
 import "./ProviderHome.css";
 
 const menu = [
-  "Overview", "My Services", "Booking Requests", "Availability Calendar", "Messages",
-  "Reviews & Ratings", "Subscription & Membership", "My Profile",
+  "Overview",
+  "My Services",
+  "Booking Requests",
+  "Availability Calendar",
+  "Messages",
+  "Reviews & Ratings",
+  "Earnings & Payments",
+  "Subscription & Membership",
+  "Notifications",
+  "My Profile",
+  "Help & Support",
 ];
 
 const revenueStats = ["TOTAL REVENUE", "AVG. BOOKING", "SETTLEMENT RATE", "DISPUTE RATE"];
@@ -410,21 +419,43 @@ export default function ProviderHome() {
     booking.status === "Accepted" && new Date(booking.eventDate) >= new Date()
   )).length;
 
-  async function answer(id, status) {
-    setBookingActionError("");
-    setBookingActionSuccess("");
-    setBusyBookingId(id);
-    try {
-      const nextStatus = status === "accepted" ? "Accepted" : "Rejected";
-      const { booking } = await bookingApi.updateStatus(id, nextStatus);
-      setRequests((current) => current.map((item) => item._id === booking._id ? booking : item));
-      setBookingActionSuccess(`Booking ${nextStatus.toLowerCase()} successfully.`);
-    } catch (error) {
-      setBookingActionError(error.message);
-    } finally {
-      setBusyBookingId("");
+
+async function answer(id, status) {
+  setBookingActionError("");
+  setBookingActionSuccess("");
+  setBusyBookingId(id);
+
+  try {
+    const statusMap = {
+      accepted: "Accepted",
+      rejected: "Rejected",
+      completed: "Completed",
+    };
+
+    const nextStatus = statusMap[status];
+
+    if (!nextStatus) {
+      throw new Error("Invalid booking action.");
     }
+
+    const { booking } = await bookingApi.updateStatus(id, nextStatus);
+
+    setRequests((current) =>
+      current.map((item) =>
+        item._id === booking._id ? booking : item
+      )
+    );
+
+    setBookingActionSuccess(
+      `Booking ${nextStatus.toLowerCase()} successfully.`
+    );
+  } catch (error) {
+    setBookingActionError(error.message);
+  } finally {
+    setBusyBookingId("");
   }
+}
+
   // Table: filter, then split into pages
   const bookingEvents = requests.map((booking) => ({
     id: booking._id,
@@ -661,14 +692,40 @@ export default function ProviderHome() {
                 <div className="ph-request-body">
                   <div className="ph-row"><strong>{request.customer?.username || "Customer"}</strong><b>{request.service?.price === undefined ? "Price unavailable" : lkr(request.service.price)}</b></div>
                   <small>{request.service?.title || "Service no longer available"} · {new Date(request.eventDate).toLocaleString()} · {request.location}</small>
-                  {request.status === "Pending" ? (
-                    <div className="ph-buttons">
-                      <button className="ph-btn dark small" disabled={busyBookingId === request._id} onClick={() => answer(request._id, "accepted")}>Accept Booking</button>
-                      <button className="ph-btn light small" disabled={busyBookingId === request._id} onClick={() => answer(request._id, "rejected")}>Reject</button>
-                    </div>
-                  ) : (
+                 {request.status === "Pending" ? (
+  <div className="ph-buttons">
+    <button
+      className="ph-btn dark small"
+      disabled={busyBookingId === request._id}
+      onClick={() => answer(request._id, "accepted")}
+    >
+      Accept Booking
+    </button>
+
+    <button
+      className="ph-btn light small"
+      disabled={busyBookingId === request._id}
+      onClick={() => answer(request._id, "rejected")}
+    >
+      Reject
+    </button>
+  </div>
+) : request.status === "Accepted" &&
+  new Date(request.eventDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? (
+  <button
+    className="ph-btn gold small"
+    disabled={busyBookingId === request._id}
+    onClick={() => answer(request._id, "completed")}
+  >
+    {busyBookingId === request._id ? "Updating..." : "Mark as Completed"}
+  </button>
+) : (
+  <span className={`ph-pill ${request.status === "Accepted" || request.status === "Completed" ? "ok" : "no"}`}>
+    {request.status}
+  </span>
+)}
                     <span className={`ph-pill ${request.status === "Accepted" ? "ok" : "no"}`}>{request.status}</span>
-                  )}
+            
                 </div>
               </div>
             ))}
@@ -917,10 +974,21 @@ export default function ProviderHome() {
           <input className="ph-search" placeholder="🔍 Search bookings, clients, services..." />
           <div className="ph-top-right">
             <button className="ph-icon" aria-label="Notifications" onClick={() => setPage("Notifications")}>🔔<i></i></button>
-            <div className="ph-profile">
-              <span className="ph-avatar">{name.charAt(0).toUpperCase()}</span>
-              <div><strong>{name}</strong><small>Service Provider</small></div>
-            </div>
+            <button
+  type="button"
+  className="ph-profile ph-profile-link"
+  onClick={() => setPage("My Profile")}
+  aria-label="Open My Profile"
+>
+  <span className="ph-avatar">
+    {name.charAt(0).toUpperCase()}
+  </span>
+
+  <div>
+    <strong>{name}</strong>
+    <small>Service Provider</small>
+  </div>
+</button>
           </div>
         </header>
 
@@ -1080,11 +1148,39 @@ export default function ProviderHome() {
                     <small>{r.service?.title || "Service no longer available"} • {new Date(r.eventDate).toLocaleString()} • {r.location}</small>
                     {r.status === "Pending" ? (
                       <div className="ph-buttons">
-                        <button className="ph-btn dark small" disabled={busyBookingId === r._id} onClick={() => answer(r._id, "accepted")}>Accept Booking</button>
-                        <button className="ph-btn light small" disabled={busyBookingId === r._id} onClick={() => answer(r._id, "rejected")}>Reject</button>
+                        <button
+                          className="ph-btn dark small"
+                          disabled={busyBookingId === r._id}
+                          onClick={() => answer(r._id, "accepted")}
+                        >
+                          Accept Booking
+                        </button>
+                        <button
+                          className="ph-btn light small"
+                          disabled={busyBookingId === r._id}
+                          onClick={() => answer(r._id, "rejected")}
+                        >
+                          Reject
+                        </button>
                       </div>
+                    ) : r.status === "Accepted" &&
+                      new Date(r.eventDate).setHours(0, 0, 0, 0) <
+                        new Date().setHours(0, 0, 0, 0) ? (
+                      <button
+                        className="ph-btn gold small"
+                        disabled={busyBookingId === r._id}
+                        onClick={() => answer(r._id, "completed")}
+                      >
+                        {busyBookingId === r._id ? "Updating..." : "Mark as Completed"}
+                      </button>
                     ) : (
-                      <span className={`ph-pill ${r.status === "Accepted" ? "ok" : "no"}`}>{r.status}</span>
+                      <span
+                        className={`ph-pill ${
+                          r.status === "Accepted" || r.status === "Completed" ? "ok" : "no"
+                        }`}
+                      >
+                        {r.status}
+                      </span>
                     )}
                   </div>
                 </div>

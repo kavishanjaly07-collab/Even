@@ -184,6 +184,7 @@ export const getProviderRequests = async (req, res) => {
 
 // ACCEPT OR REJECT A PROVIDER'S BOOKING REQUEST
 
+// ACCEPT, REJECT OR COMPLETE A PROVIDER'S BOOKING
 export const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -195,82 +196,98 @@ export const updateBookingStatus = async (req, res) => {
       });
     }
 
-    if (!["Accepted", "Rejected"].includes(status)) {
+    if (!["Accepted", "Rejected", "Completed"].includes(status)) {
       return res.status(400).json({
-        message: "Status must be Accepted or Rejected.",
+        message: "Invalid booking status.",
       });
     }
 
+    // Find booking belonging to this provider
     const existingBooking = await Booking.findOne({
       _id: id,
       provider: req.user._id,
-      status: "Pending",
     });
 
     if (!existingBooking) {
       return res.status(404).json({
-        message: "Pending booking not found or access denied.",
+        message: "Booking not found or access denied.",
       });
     }
 
-    if (status === "Accepted") {
+    const currentStatus = existingBooking.status;
+
+    // PENDING -> ACCEPTED OR REJECTED
+    if (currentStatus === "Pending" && ["Accepted", "Rejected"].includes(status)) {
+
+      if (status === "Accepted") {
+        const eventStart = new Date(existingBooking.eventDate);
+        eventStart.setUTCHours(0, 0, 0, 0);
+
+        const eventEnd = new Date(eventStart);
+        eventEnd.setUTCDate(eventEnd.getUTCDate() + 1);
+
+        // Check another accepted booking on the same date
+        const conflictingBooking = await Booking.findOne({
+          _id: { $ne: existingBooking._id },
+          provider: req.user._id,
+          status: "Accepted",
+          eventDate: {
+            $gte: eventStart,
+            $lt: eventEnd,
+          },
+        });
+
+        if (conflictingBooking) {
+          return res.status(409).json({
+            message: "You already have an accepted booking on this date.",
+          });
+        }
+
+        // Check provider unavailable date
+        const blockedDate = await ProviderAvailability.findOne({
+          provider: req.user._id,
+          type: "Unavailable",
+          startDate: { $lt: eventEnd },
+          endDate: { $gte: eventStart },
+        });
+
+        if (blockedDate) {
+          return res.status(409).json({
+            message: "You have marked this date as unavailable.",
+          });
+        }
+      }
+    }
+
+    // ACCEPTED -> COMPLETED
+    else if (currentStatus === "Accepted" && status === "Completed") {
       const eventStart = new Date(existingBooking.eventDate);
       eventStart.setUTCHours(0, 0, 0, 0);
 
       const eventEnd = new Date(eventStart);
       eventEnd.setUTCDate(eventEnd.getUTCDate() + 1);
 
-      const conflictingBooking = await Booking.findOne({
-        _id: { $ne: existingBooking._id },
-        provider: req.user._id,
-        status: "Accepted",
-        eventDate: {
-          $gte: eventStart,
-          $lt: eventEnd,
-        },
-      });
-
-      if (conflictingBooking) {
-        return res.status(409).json({
-          message: "You already have an accepted booking on this date.",
-        });
-      }
-
-      const blockedDate = await ProviderAvailability.findOne({
-        provider: req.user._id,
-        type: "Unavailable",
-        startDate: { $lt: eventEnd },
-        endDate: { $gte: eventStart },
-      });
-
-      if (blockedDate) {
-        return res.status(409).json({
-          message: "You have marked this date as unavailable.",
+      // Allow completion only after the event date has ended
+      if (new Date() < eventEnd) {
+        return res.status(400).json({
+          message: "You can mark this booking as completed only after the event date has passed.",
         });
       }
     }
-    // CHECK EXISTING ACCEPTED BOOKING
-const conflictingBooking = await Booking.findOne({
-  provider: service.provider,
-  status: "Accepted",
-  eventDate: {
-    $gte: eventStart,
-    $lt: eventEnd,
-  },
-});
 
-if (conflictingBooking) {
-  return res.status(409).json({
-    message: "This provider already has an accepted booking on your selected event date.",
-    available: false,
-  });
-}
+    // Prevent invalid status changes
+    else {
+      return res.status(400).json({
+        message: `Cannot change booking from ${currentStatus} to ${status}.`,
+      });
+    }
 
+    // Update only if the status has not changed meanwhile
     const booking = await Booking.findOneAndUpdate(
       {
         _id: id,
         provider: req.user._id,
-        status: "Pending",
+        status: currentStatus,
       },
       {
         $set: { status },
@@ -297,6 +314,7 @@ if (conflictingBooking) {
       message: `Booking ${status.toLowerCase()} successfully.`,
       booking,
     });
+
   } catch (error) {
     console.error("Update Booking Status Error:", error.message);
 
@@ -305,3 +323,6 @@ if (conflictingBooking) {
     });
   }
 };
+
+
+ 

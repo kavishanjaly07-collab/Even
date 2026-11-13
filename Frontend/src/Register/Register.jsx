@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { authApi, providerProfileApi } from "../services/api";
@@ -9,6 +10,28 @@ const BACKGROUND_IMAGE = "/bgimg.jpg"; // relative to public folder
 
 // All the CSS for this page lives here, so this is the ONLY file you need.
 const styles = `
+  .password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 45px;
+}
+
+.password-eye-btn {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  border: none;
+  background: transparent;
+  color: #4a0e63;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
   .register-page {
     min-height: 100vh;
     display: flex;
@@ -51,9 +74,9 @@ const styles = `
 
   .register-brand-logo {
     display: block;
-    width: min(100%, 210px);
+    width: min(100%, 96px);
     height: auto;
-    aspect-ratio: 1408 / 768;
+    aspect-ratio: 1;
     margin: 0 auto 18px;
     object-fit: contain;
   }
@@ -151,11 +174,18 @@ export default function Register() {
   const [form, setForm] = useState({ role: "customer", username: "", serviceType: "", phone: "", email: "", password: "" });
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((current) => ({ ...current, [name]: value }));
   }
+//   if (!confirmPassword) {
+//   setMessage("Please confirm your password.");
+//   return;
+// }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -168,6 +198,14 @@ export default function Register() {
       setMessage("Password must contain at least 6 characters.");
       return;
     }
+    if (form.role === "provider" && !form.serviceType.trim()) {
+  setMessage("Please enter your service type.");
+  return;
+}
+    if (form.password !== confirmPassword) {
+  setMessage("Passwords do not match.");
+  return;
+}
 
     setSubmitting(true);
     setMessage("");
@@ -217,7 +255,7 @@ export default function Register() {
 
       <div className="register-page">
         <form className="register-card" onSubmit={handleSubmit}>
-          {/* <BrandLogo className="register-brand-logo" /> */}
+          <BrandLogo className="register-brand-logo" />
           <h1>REGISTER</h1>
 
           <div className="role-selection">
@@ -253,14 +291,20 @@ export default function Register() {
             onChange={handleChange}
           />
 
-          <label htmlFor="serviceType">Service Type</label>
-          <input
-            id="serviceType"
-            name="serviceType"
-            type="text"
-            value={form.serviceType}
-            onChange={handleChange}
-          />
+          {form.role === "provider" && (
+  <>
+    <label htmlFor="serviceType">Service Type</label>
+    <input
+      id="serviceType"
+      name="serviceType"
+      type="text"
+      value={form.serviceType}
+      onChange={handleChange}
+      required
+      placeholder="Enter your service type"
+    />
+  </>
+)}
 
           <label htmlFor="phone">Phone Number</label>
           <input
@@ -280,14 +324,49 @@ export default function Register() {
             onChange={handleChange}
           />
 
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-          />
+<label htmlFor="password">Password</label>
+
+<div className="password-input-wrapper">
+  <input
+    id="password"
+    name="password"
+    type={showPassword ? "text" : "password"}
+    value={form.password}
+    onChange={handleChange}
+  />
+
+  <button
+    type="button"
+    className="password-eye-btn"
+    onClick={() => setShowPassword(!showPassword)}
+    aria-label={showPassword ? "Hide password" : "Show password"}
+  >
+    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+  </button>
+</div>
+
+<label htmlFor="confirmPassword">Confirm Password</label>
+
+<div className="password-input-wrapper">
+  <input
+    id="confirmPassword"
+    name="confirmPassword"
+    type={showConfirmPassword ? "text" : "password"}
+    value={confirmPassword}
+    onChange={(e) => setConfirmPassword(e.target.value)}
+  />
+
+  <button
+    type="button"
+    className="password-eye-btn"
+    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+  >
+    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+  </button>
+</div>
+
+
 
           <button type="submit" className="register-btn" disabled={submitting || loading}>
             {loading ? "Checking session..." : submitting ? "Registering..." : "Register"}

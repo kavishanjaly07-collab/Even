@@ -11,16 +11,20 @@ function Navbar() {
   const [activeLink, setActiveLink] = useState("Services");
   const navigate = useNavigate();
   const destinations = {
-    Services: { sectionId: "popular-services" },
-    "How It Works": { sectionId: "how-it-works" },
-    Categories: { sectionId: "categories" },
-  };
+  Services: { sectionId: "popular-services" },
+  "How It Works": { sectionId: "how-it-works" },
+  Categories: { sectionId: "categories" },
+  "Event Connect": { sectionId: "event-connect" },
+};
 
   return (
     <header className="navbar">
       <BrandLogo className="navbar__logo" />
-
+      <p className="event-connect" style={{ textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)", fontFamily: "var(--font-family)", fontSize: "30px", fontWeight: "var(--font-weight-bold)", color: "#540c69" }}>
+        Event Connect
+      </p>
       <nav className="navbar__links">
+        
         {navLinks.map((link) => (
           <a
             key={link}
@@ -34,10 +38,13 @@ function Navbar() {
                 navigate(destination.path);
                 return;
               }
-
               document
-                .getElementById(destination.sectionId)
-                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  .getElementById(destination.sectionId)
+  ?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+             
               window.history.replaceState(null, "", `#${destination.sectionId}`);
             }}
           >
@@ -47,6 +54,7 @@ function Navbar() {
       </nav>
 
       <div className="navbar__actions">
+     
         <button className="btn btn--outline-gold"
         onClick={()=> navigate("/login")}>Login</button>
         {/* <Link to="/login" className="btn btn--outline-gold">
@@ -57,10 +65,10 @@ function Navbar() {
         </Link> */}
          <button className="btn btn--outline" onClick={() => navigate("/register")}>Register</button> 
         {/* <button className="btn btn--plum btn--sm">Book Services</button> */}
-        <button className="navbar__bell" aria-label="Notifications">
+        {/* <button className="navbar__bell" aria-label="Notifications">
           <Bell size={16} />
           <span className="navbar__dot" />
-        </button>
+        </button> */}
       </div>
     </header>
   );

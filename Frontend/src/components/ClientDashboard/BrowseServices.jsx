@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { availabilityApi, bookingApi, serviceApi } from "../../services/api";
 import "./BrowseServices.css";
@@ -266,11 +266,18 @@ setBookingForm({
           <div className="topbar-actions">
             <button className="icon-button" aria-label="Notifications" onClick={() => handleAction("Notifications are not configured in the backend.")}>♧<i /></button>
             <button className="icon-button" aria-label="Messages" onClick={() => navigate("/Messages")}>▤</button>
-            <div className="profile-mini">
-              <div className="avatar">{user?.username?.charAt(0).toUpperCase() || "A"}</div>
-              <div><strong>{user?.username || "Customer"}</strong><small>Customer</small></div>
-              <span className="chevron">⌄</span>
-            </div>
+           <Link to="/MyProfile" className="profile-mini profile-mini-link">
+  <div className="avatar">
+    {user?.username?.charAt(0).toUpperCase() || "A"}
+  </div>
+
+  <div>
+    <strong>{user?.username || "Customer"}</strong>
+    <small>Customer</small>
+  </div>
+
+  <span className="chevron">⌄</span>
+</Link>
           </div>
         </header>
 

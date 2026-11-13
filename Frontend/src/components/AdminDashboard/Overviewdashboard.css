@@ -93,3 +93,22 @@
   .ov .ov-main { padding: 12px; }
   .ov .kpis, .ov .quick { grid-template-columns: repeat(2, 1fr); }
 }
+.ov-user-link {
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 6px 10px;
+  transition: background 0.2s ease;
+}
+
+.ov-user-link:hover {
+  background: #f8effb;
+}
+
+.ov-user-link:focus-visible {
+  outline: 2px solid #873ca0;
+  outline-offset: 3px;
+}

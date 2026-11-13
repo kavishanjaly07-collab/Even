@@ -1,4 +1,4 @@
-import logo from "../assets/logo.original.jpg";
+import logo from "../assets/fin.jpg";
 
 export default function BrandLogo({ className = "", alt = "Event Connect" }) {
   return (
@@ -7,6 +7,7 @@ export default function BrandLogo({ className = "", alt = "Event Connect" }) {
       src={logo}
       alt={alt}
       decoding="async"
+      style={{ borderRadius: "50%" }}
     />
   );
 }

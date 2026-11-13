@@ -226,3 +226,12 @@ export default function ProfileSettings() {
     </div>
   );
 }
+
+
+<section class="ch-card ch-account-note">
+  <h2>Account Information</h2>
+  <p>Your account uses the contact details stored on your profile.</p>
+  <p>Address and profile image are not available in the current account schema.</p>
+  <p>Password, role, and account creation date cannot be changed here.</p>
+  <a class="ch-link" href="/myprofile" data-discover="true">view my profile </a>
+</section>

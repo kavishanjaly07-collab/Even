@@ -5,6 +5,7 @@ import "./AdminSidebar.css";
 
 const links = [
   { label: "Overview", path: "/AdminDashboard", icon: "▦", end: true },
+  { label: "My Profile", path: "/AdminDashboard/profile", icon: "♙" },
   { label: "User Management", path: "/AdminDashboard/users", icon: "♙" },
   { label: "Provider Management", path: "/AdminDashboard/providers", icon: "♧", badge: "12 Pending", badgeType: "pending" },
   { label: "Service & Category Management", path: "/AdminDashboard/services", icon: "▤" },
@@ -12,6 +13,7 @@ const links = [
   { label: "Payments & Commission", path: "/AdminDashboard/payments", icon: "＄" },
   { label: "Subscription Management", path: "/AdminDashboard/subscriptions", icon: "♢" },
   { label: "Platform Settings", path: "/AdminDashboard/settings", icon: "⚙" },
+
 ];
 
 export default function AdminSidebar() {

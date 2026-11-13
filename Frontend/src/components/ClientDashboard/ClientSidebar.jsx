@@ -29,7 +29,7 @@ export default function ClientSidebar({ onHelp, onLogout }) {
         <BrandLogo className="client-sidebar-brand-mark" />
         <span className="client-sidebar-brand-copy">
           <strong>Event Connect</strong>
-          <small>PREMIER ATELIER</small>
+          <small>Client Dashboard</small>
         </span>
       </div>
 

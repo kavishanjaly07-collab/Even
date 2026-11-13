@@ -172,7 +172,21 @@ export default function OverviewDashboard() {
         <header className="ov-top">
           <input className="ov-search" placeholder="Search anything…" aria-label="Search" />
           <span className="env">MongoDB records</span>
-          <div className="ov-user"><span className="avatar">{user?.username?.charAt(0).toUpperCase() || "A"}</span><div><strong>{user?.username || "Administrator"}</strong><small>Platform Administrator</small></div></div>
+          <button
+  type="button"
+  className="ov-user ov-user-link"
+  onClick={() => navigate("/AdminDashboard/profile")}
+  aria-label="Open Admin Profile"
+>
+  <span className="avatar">
+    {user?.username?.charAt(0).toUpperCase() || "A"}
+  </span>
+
+  <div>
+    <strong>{user?.username || "Administrator"}</strong>
+    <small>Platform Administrator</small>
+  </div>
+</button>
         </header>
 
         <section className="ov-head">

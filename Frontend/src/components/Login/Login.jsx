@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { authApi } from "../../services/api";
 import BrandLogo from "../BrandLogo";
 import "./Login.css";
-
+import { Eye, EyeOff } from "lucide-react";
 const dashboardPaths = {
   customer: "/CustomerHome",
   provider: "/ProviderHome",
@@ -18,6 +18,7 @@ export default function Login() {
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (authError) setMessage(authError);
@@ -66,7 +67,7 @@ export default function Login() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
-        {/* <BrandLogo className="login-brand-logo" /> */}
+        <BrandLogo className="login-brand-logo" />
         <h1>LOGIN</h1>
 
         <label htmlFor="identifier">Email or User Name</label>
@@ -77,15 +78,29 @@ export default function Login() {
           value={form.identifier}
           onChange={handleChange}
         />
-
         <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          value={form.password}
-          onChange={handleChange}
+        <div className="password-input-wrapper">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={form.password}
+            onChange={handleChange}
         />
+        <button
+        id="password-toggle"
+        name="password-toggle"
+  type="button"
+  className="password-toggle"
+  onClick={() => setShowPassword((prev) => !prev)}
+  aria-label={showPassword ? "Hide password" : "Show password"}
+>
+  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+</button>    
+        </div>
+  
+       
+
 
         <button type="submit" className="pill-btn" disabled={submitting || loading}>
           {loading ? "Checking session..." : submitting ? "Signing in..." : "Login"}

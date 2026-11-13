@@ -54,6 +54,13 @@
   border-radius: 6px;
 }
 
+.footer .footer-brand-logo {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
 .footer .brand-name {
   font-family: "Playfair Display", serif;
   font-size: 13px;

@@ -1,4 +1,5 @@
 import "./Footer.css";
+import BrandLogo from "../BrandLogo";
 
 // ---------- DATA ----------
 // Edit the links here. The page repeats them with .map()
@@ -75,9 +76,8 @@ export default function Footer() {
           {/* Column 1: brand */}
           <div className="footer-brand">
             <div className="brand-row">
-              
-               {/* <span className="brand-logo"></span> */}
-              <span className="brand-name">Event Connect</span> 
+              <BrandLogo className="footer-brand-logo" />
+              <span className="brand-name">Event Connect</span>
             </div>
             <p>
               The premier marketplace orchestrating bespoke celebrations.

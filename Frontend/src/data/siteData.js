@@ -1,6 +1,6 @@
 // Content lives here, so you can change text without touching components.
 
-export const navLinks = ["Services", "How It Works", "Categories"];
+export const navLinks = ["Services", "How It Works", "Categories","Event Connect"];
 
 export const serviceCategories = [
   "Select Experience",

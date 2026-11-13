@@ -111,7 +111,7 @@ export default function HowItWorks() {
       </section>
 
       {/* SECTION 2: Why choose us (left aligned, darker background) */}
-      <section className="features-section">
+      <section id="event-connect" className="features-section">
         <div className="container">
           <div className="heading">
             <span className="eyebrow">UNCOMPROMISING QUALITY</span>

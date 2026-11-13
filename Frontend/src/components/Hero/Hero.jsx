@@ -2,9 +2,7 @@ import { Star, Sparkles, Gem, BadgeCheck, Lock, ShieldCheck } from "lucide-react
 import { trustMarks } from "../../data/siteData";
 import "./Hero.css";
 
-
-const HERO_IMAGE = null;
-
+const HERO_IMAGE = "/src/assets/cover.jpg"; // relative to public folder
 const trustIcons = [BadgeCheck, Lock, Star];
 
 export default function Hero() {

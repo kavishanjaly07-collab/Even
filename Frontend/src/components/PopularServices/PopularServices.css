@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
 
 /* Colors: change here to update everything */
-.popular-section {
+ .popular-section {
   --gold-text: #8a6d00;
   --purple-dark: #3b0a52;
   --gold: #eab308;
@@ -190,4 +190,4 @@
   .popular-section .popular-inner {
     padding: 0 18px;
   }
-}
+} 

@@ -3,25 +3,25 @@ import "./Categories.css";
 // ---------- DATA ----------
 // Change numbers / names here. The page below repeats them with .map()
 const stats = [
-  { icon: "😊", number: "3000+", label: "Happy Customers" },
-  { icon: "🎉", number: "500+", label: "Successful Events" },
-  { icon: "🏅", number: "150+", label: "Service Providers" },
-  { icon: "⭐", number: "4.9", label: "Average Rating" },
+  { icon: "😊",label: "Happy Customers" },
+  { icon: "🎉",  label: "Successful Events" },
+  { icon: "🏅", label: "Service Providers" },
+  { icon: "⭐",  label: "Average Rating" },
 ];
 
 const categories = [
-  { icon: "📷", name: "Photography", count: "38 Providers Available" },
-  { icon: "🎥", name: "Videography", count: "24 Providers Available" },
-  { icon: "🎈", name: "Decoration", count: "42 Providers Available" },
-  { icon: "🍴", name: "Catering", count: "31 Providers Available" },
-  { icon: "🎂", name: "Cake Design", count: "19 Providers Available" },
-  { icon: "💄", name: "Makeup Artist", count: "27 Providers Available" },
-  { icon: "🎧", name: "DJ Services", count: "33 Providers Available" },
-  { icon: "💃", name: "Dance Groups", count: "16 Providers Available" },
-  { icon: "🪄", name: "Magicians", count: "11 Providers Available" },
-  { icon: "🎁", name: "Surprise Gift Services", count: "14 Providers Available" },
-  { icon: "🏛️", name: "Event Venues", count: "41 Venues Available" },
-  { icon: "💍", name: "Wedding Planning", count: "29 Planners Available" },
+  { icon: "📷", name: "Photography" },
+  { icon: "🎥", name: "Videography" },
+  { icon: "🎈", name: "Decoration" },
+  { icon: "🍴", name: "Catering" },
+  { icon: "🎂", name: "Cake Design" },
+  { icon: "💄", name: "Makeup Artist" },
+  { icon: "🎧", name: "DJ Services" },
+  { icon: "💃", name: "Dance Groups" },
+  { icon: "🪄", name: "Magicians" },
+  { icon: "🎁", name: "Surprise Gift Services"},
+  { icon: "🏛️", name: "Event Venues" },
+  { icon: "💍", name: "Wedding Planning" },
 ];
 
 // ---------- SMALL COMPONENTS ----------

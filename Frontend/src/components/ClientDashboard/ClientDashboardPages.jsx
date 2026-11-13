@@ -25,14 +25,19 @@ function PageShell({ title, description, children }) {
             <span aria-hidden="true">⌕</span>
             <input aria-label="Search dashboard" placeholder="Search services, bookings, vendors..." />
           </label>
-          <div className="client-extra-user">
-            <span className="client-extra-avatar">{user?.username?.charAt(0).toUpperCase() || "C"}</span>
-            <span><strong>{user?.username || "Customer"}</strong><small>Customer</small></span>
-          </div>
+          <Link to="/MyProfile" className="client-extra-user client-extra-user-link">
+  <span className="client-extra-avatar">
+    {user?.username?.charAt(0).toUpperCase() || "C"}
+  </span>
+  <span>
+    <strong>{user?.username || "Customer"}</strong>
+    <small>Customer</small>
+  </span>
+</Link>
         </header>
         <section className="client-extra-content">
           <div className="client-extra-heading">
-            <span>CLIENT DASHBOARD</span>
+            <span>Client Dashboard</span>
             <h1>{title}</h1>
             <p>{description}</p>
           </div>
@@ -64,6 +69,7 @@ export function PaymentsBudget() {
     </PageShell>
   );
 }
+
 
 export function MyReviews() {
   return (

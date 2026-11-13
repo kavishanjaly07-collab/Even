@@ -146,3 +146,12 @@
 .navbar .btn--white { background: var(--card); color: var(--plum-soft); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
 .navbar .btn--gold { background: var(--gold); color: var(--plum); }
 .navbar .btn--outline{ border: 1px solid var(--gold); color: var(--gold-dark); background: var(--card); }
+.event-connect {
+  font-family: var(--font-family);
+  font-size: 30px;
+  font-weight: var(--font-weight-bold); 
+  color:#540c69;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  
+
+}

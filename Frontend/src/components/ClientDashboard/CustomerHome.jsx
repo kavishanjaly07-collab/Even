@@ -64,12 +64,22 @@ export default function CustomerHome() {
 
       <div className="ch-main">
         <header className="ch-top">
-          <div className="ch-page-label">Client Dashboard</div>
+          <div className="ch-page-label"></div>
           <div className="ch-top-right">
-            <div className="ch-profile">
-              <span className="ch-avatar">{getInitial(name)}</span>
-              <div><strong>{name}</strong><small>{customer?.email || "Email not available"}</small></div>
-            </div>
+          <Link
+  to="/MyProfile"
+  className="ch-profile ch-profile-link"
+  aria-label="Open My Profile"
+>
+  <span className="ch-avatar">
+    {getInitial(name)}
+  </span>
+
+  <div>
+    <strong>{name}</strong>
+    <small>{customer?.email || "Email not available"}</small>
+  </div>
+</Link>
           </div>
         </header>
 
@@ -148,7 +158,7 @@ export default function CustomerHome() {
             )}
           </section>
 
-          <section className="ch-card ch-account-note">
+          {/* <section className="ch-card ch-account-note">
             <h2>Account Information</h2>
             <p>
               {customer?.createdAt
@@ -157,7 +167,7 @@ export default function CustomerHome() {
             </p>
             <p>Payment and spending details are not available because no payment records are configured.</p>
             <Link to="/MyProfile" className="ch-link">View My Profile →</Link>
-          </section>
+          </section> */}
         </main>
       </div>
     </div>
