@@ -12,6 +12,8 @@ const generateToken = (id) => {
   );
 };
 
+
+
 // REGISTER
 export const register = async (req, res) => {
   try {
